@@ -1,0 +1,42 @@
+﻿@model IEnumerable<AdminPanel.Models.Expense>
+
+@{
+    ViewData["Title"] = "Udgifter";
+}
+
+<h2>Udgifter</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Tilføj ny udgift</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Produkt</th>
+            <th>Dato</th>
+            <th>Antal</th>
+            <th>Pris pr. stk.</th>
+            <th>Samlet pris</th>
+            <th>Noter</th>
+            <th>Handlinger</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Produkt</td>
+                <td>@item.Dato.ToShortDateString()</td>
+                <td>@item.Antal</td>
+                <td>@item.PrisPrStk.ToString("C")</td>
+                <td>@item.TotalPris.ToString("C")</td>
+                <td>@item.Noter</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-secondary">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

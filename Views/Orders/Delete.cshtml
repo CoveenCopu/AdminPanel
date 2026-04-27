@@ -1,0 +1,18 @@
+﻿@model AdminPanel.Models.Order
+
+<h2>Slet ordre</h2>
+
+<h4>Er du sikker på, du vil slette denne ordre?</h4>
+
+<div>
+    <b>Kunde:</b> @Model.Kunde <br />
+    <b>Adresse:</b> @Model.Adresse <br />
+    <b>Pris:</b> @Model.OrderItems.Sum(oi => (oi.Produkt?.Pris ?? 0) * oi.Antal).ToString("C") <br />
+    <b>Noter:</b> @Model.Noter
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Slet</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

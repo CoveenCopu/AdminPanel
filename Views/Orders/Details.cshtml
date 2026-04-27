@@ -1,0 +1,39 @@
+﻿@model AdminPanel.Models.Order
+
+<h2>Ordredetaljer</h2>
+
+<div>
+    <b>Kunde:</b> @Model.Kunde <br />
+    <b>Adresse:</b> @Model.Adresse <br />
+    <b>Telefon:</b> @Model.Telefonnummer <br />
+    <b>Opsætning:</b> @Model.Opsætningsdato?.ToShortDateString() <br />
+    <b>Afhentning:</b> @(Model.Afhetningsdato?.ToShortDateString() ?? "") <br />
+    <b>Transport:</b> @Model.Transport <br />
+    <b>Pris:</b> @Model.OrderItems.Sum(oi => (oi.Produkt?.Pris ?? 0) * oi.Antal).ToString("C") <br />
+    <b>Noter:</b> @Model.Noter
+</div>
+
+<h4>Produkter</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Produkt</th>
+            <th>Pris</th>
+            <th>Antal</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.OrderItems)
+        {
+            <tr>
+                <td>@item.Produkt.Navn</td>
+                <td>@(item.Produkt?.Pris ?? 0).ToString("C")</td>
+                <td>@item.Antal</td>
+                <td>@((item.Produkt?.Pris ?? 0) * item.Antal).ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary">Tilbage til Ordrer</a>

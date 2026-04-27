@@ -1,0 +1,49 @@
+﻿@model IEnumerable<AdminPanel.Models.Order>
+
+@{
+    ViewData["Title"] = "Ordrer";
+}
+
+<h2>Ordrer</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Tilføj ordre</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Kunde</th>
+            <th>By</th>
+            <th>Adresse</th>
+            <th>Telefon</th>
+            <th>Opsætning</th>
+            <th>Afhentning</th>
+            <th>Pris</th>
+            <th>Transport</th>
+            <th>Noter</th>
+            <th>Handlinger</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var totalPris = item.OrderItems.Sum(oi => (oi.Produkt?.Pris ?? 0) * oi.Antal);
+            <tr>
+                <td>@item.Kunde</td>
+                <td>@item.By</td>
+                <td>@item.Adresse</td>
+                <td>@item.Telefonnummer</td>
+                <td>@item.Opsætningsdato?.ToShortDateString()</td>
+                <td>@item.Afhetningsdato?.ToShortDateString()</td>
+                <td>@totalPris.ToString("C")</td>
+				<td>@item.Transport</td>
+                <td>@item.Noter</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-secondary">Rediger</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Slet</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

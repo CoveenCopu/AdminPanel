@@ -1,0 +1,39 @@
+﻿@model IEnumerable<AdminPanel.Models.Produkt>
+
+@{
+    ViewData["Title"] = "Produktkatalog";
+}
+
+<h2>Produktkatalog</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Tilføj produkt</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Navn</th>
+            <th>Pris</th>
+            <th>Info</th>
+            <th>Varebeholdning</th>
+            <th>Handlinger</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Navn</td>
+                <td>@item.Pris.ToString("C")</td>
+                <td>@item.Info</td>
+                <td>@item.Beholdning</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Info</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Rediger</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-secondary">Slet</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

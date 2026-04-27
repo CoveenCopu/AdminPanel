@@ -1,0 +1,15 @@
+﻿@model AdminPanel.Models.Produkt
+
+@{
+    ViewData["Title"] = "Produktinfo";
+}
+
+<h2>Produktinfo</h2>
+
+<div>
+    <h4>@Model.Navn</h4>
+    <div>Pris: @Model.Pris.ToString("C")</div>
+    <div>Info: @Model.Info</div>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary">Tilbage</a>

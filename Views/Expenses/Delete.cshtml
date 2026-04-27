@@ -1,0 +1,24 @@
+﻿@model AdminPanel.Models.Expense
+
+@{
+    ViewData["Title"] = "Slet Udgift";
+}
+
+<h2>Slet Udgift</h2>
+
+<h3>Er du sikker på at du vil slette denne udgift?</h3>
+
+<div>
+    <h4>@Model.Produkt</h4>
+    <div>Dato: @Model.Dato.ToShortDateString()</div>
+    <div>Antal: @Model.Antal</div>
+    <div>Pris pr. stk.: @Model.PrisPrStk.ToString("C")</div>
+    <div>Samlet pris: @Model.TotalPris.ToString("C")</div>
+    <div>Noter: @Model.Noter</div>
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

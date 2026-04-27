@@ -1,0 +1,20 @@
+﻿@model AdminPanel.Models.Produkt
+@{
+    ViewData["Title"] = "Slet produkt";
+}
+
+<h2>Slet produkt</h2>
+
+<h3>Er du sikker på, at du vil slette produktet?</h3>
+
+<div>
+    <h4>@Model.Navn</h4>
+    <div>Pris: @Model.Pris.ToString("C")</div>
+    <div>Info: @Model.Info</div>
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Slet</button>
+    <a asp-action="Index" class="btn btn-secondary">Annuller</a>
+</form>

@@ -1,0 +1,31 @@
+﻿@model IEnumerable<AdminPanel.Models.YearSummary>
+
+@{
+    ViewData["Title"] = "Årsopgørelser";
+}
+
+<h2>Årsopgørelser</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>År</th>
+            <th>Omsætning</th>
+            <th>Udgifter</th>
+            <th>Antal Jobs</th>
+            <th>Årsopgørelse</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.År</td>
+                <td>@item.Omsætning.ToString("C")</td>
+                <td>@item.Udgifter.ToString("C")</td>
+                <td>@item.AntalJobs</td>
+                <td>@item.Årsopgørelse.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>

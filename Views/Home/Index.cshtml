@@ -1,0 +1,85 @@
+﻿@{
+    ViewData["Title"] = "MELFAR SERVICEUDLEJNING ADMIN PANEL";
+}
+
+<div class="container mt-5">
+    <h1 class="text-center mb-5" style="font-weight: bold; color: #2c3e50;">
+        MELFAR SERVICEUDLEJNING ADMIN PANEL
+    </h1>
+
+    <div class="row justify-content-center">
+        <!-- Ordrer -->
+        <div class="col-md-3 mb-4">
+            <div class="card text-center shadow-lg h-100 border-primary">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <i class="bi bi-card-checklist display-1 text-primary mb-3"></i>
+                    <h3 class="card-title">Ordrer</h3>
+                    <p class="card-text">Se, tilføj og rediger alle ordrer.</p>
+                    <a asp-controller="Orders" asp-action="Index" class="btn btn-primary mt-auto">Gå til Ordrer</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Udgifter -->
+        <div class="col-md-3 mb-4">
+            <div class="card text-center shadow-lg h-100 border-success">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <i class="bi bi-cash-stack display-1 text-success mb-3"></i>
+                    <h3 class="card-title">Udgifter</h3>
+                    <p class="card-text">Se, tilføj og rediger udgifter.</p>
+                    <a asp-controller="Expenses" asp-action="Index" class="btn btn-success mt-auto">Gå til Udgifter</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Årsopgørelser -->
+        <div class="col-md-3 mb-4">
+            <div class="card text-center shadow-lg h-100 border-warning">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <i class="bi bi-graph-up display-1 text-warning mb-3"></i>
+                    <h3 class="card-title">Årsopgørelser</h3>
+                    <p class="card-text">Se årsopgørelser for hvert år.</p>
+                    <a asp-controller="YearSummaries" asp-action="Index" class="btn btn-warning mt-auto">Se Årsopgørelser</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Produktkatalog -->
+        <div class="col-md-3 mb-4">
+            <div class="card text-center shadow-lg h-100 border-info">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <i class="bi bi-box-seam display-1 text-info mb-3"></i>
+                    <h3 class="card-title">Produktkatalog</h3>
+                    <p class="card-text">Se og rediger dine produkter.</p>
+                    <a asp-controller="Produkter" asp-action="Index" class="btn btn-info mt-auto">Gå til Produktkatalog</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f0f2f5;
+        font-family: "Segoe UI", sans-serif;
+    }
+
+    .card {
+        border-radius: 15px;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+    .btn {
+        width: 100%;
+        font-weight: bold;
+    }
+
+    h1 {
+        text-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    }
+</style>
