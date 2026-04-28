@@ -1,13 +1,15 @@
 ﻿using AdminPanel.Data;
 using AdminPanel.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AdminPanel.Controllers
 {
+    [Authorize]
     public class OrdersController : Controller
     {
         private readonly AppDbContext _context;
@@ -87,7 +89,8 @@ namespace AdminPanel.Controllers
                     order.OrderItems.Add(new OrderItem
                     {
                         ProduktId = produktId[i],
-                        Antal = antal[i]
+                        Antal = antal[i],
+                        Price = _context.Produkter.ToDictionary(p => p.Id, p => p.Pris)[produktId[i]]
                     });
                 }
             }

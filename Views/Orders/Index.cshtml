@@ -28,7 +28,6 @@
     <tbody>
         @foreach (var item in Model)
         {
-            var totalPris = item.OrderItems.Sum(oi => (oi.Produkt?.Pris ?? 0) * oi.Antal);
             <tr>
                 <td>@item.Kunde</td>
                 <td>@item.By</td>
@@ -36,7 +35,7 @@
                 <td>@item.Telefonnummer</td>
                 <td>@item.Opsætningsdato?.ToShortDateString()</td>
                 <td>@item.Afhetningsdato?.ToShortDateString()</td>
-                <td>@totalPris.ToString("C")</td>
+                <td>@item.Pris.ToString("C")</td>
 				<td>@item.Transport</td>
                 <td>@item.Noter</td>
                 <td>
