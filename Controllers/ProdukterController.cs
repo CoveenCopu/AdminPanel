@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AdminPanel.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator")]
     public class ProdukterController : Controller
     {
         private readonly AppDbContext _context;

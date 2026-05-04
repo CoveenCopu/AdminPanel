@@ -1,4 +1,7 @@
-﻿using FirebaseAdmin.Auth;
+﻿using AdminPanel.Data;
+using AdminPanel.Models;
+using FirebaseAdmin.Auth;
+using Google;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +11,13 @@ namespace AdminPanel.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly AppDbContext _context;
+
+        public AccountController(AppDbContext context)
+        {
+            _context = context;
+        }
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -17,20 +27,50 @@ namespace AdminPanel.Controllers
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] TokenRequest request)
         {
+            if (string.IsNullOrWhiteSpace(request?.IdToken))
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Manglende token"
+                });
+            }
+
             try
             {
+                // Verificer Firebase token
                 var decodedToken = await FirebaseAuth.DefaultInstance
                     .VerifyIdTokenAsync(request.IdToken);
 
+                var uid = decodedToken.Uid;
+
+                // Hent bruger fra lokal SQL database via UID
+                var user = _context.Users
+                    .FirstOrDefault(u => u.Uid == uid);
+
+                if (user == null)
+                {
+                    return Unauthorized(new
+                    {
+                        success = false,
+                        message = "Bruger findes ikke i lokal database"
+                    });
+                }
+
+                // Hent email fra Firebase token
                 var email = decodedToken.Claims.ContainsKey("email")
-                    ? decodedToken.Claims["email"].ToString()
+                    ? decodedToken.Claims["email"]?.ToString() ?? ""
                     : "";
 
+                // Opret claims inkl. Role fra SQL database
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.NameIdentifier, decodedToken.Uid),
+                    new Claim(ClaimTypes.NameIdentifier, uid),
                     new Claim(ClaimTypes.Email, email),
-                    new Claim(ClaimTypes.Name, email)
+                    new Claim(ClaimTypes.Name, email),
+
+                    // Rolle fra lokal database
+                    new Claim(ClaimTypes.Role, user.Role.ToString())
                 };
 
                 var identity = new ClaimsIdentity(
@@ -39,19 +79,27 @@ namespace AdminPanel.Controllers
 
                 var principal = new ClaimsPrincipal(identity);
 
+                // Login med cookie authentication
                 await HttpContext.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     principal);
 
-                return Ok(new { success = true });
+                return Ok(new
+                {
+                    success = true,
+                    role = user.Role.ToString()
+                });
             }
-            catch
+            catch (Exception ex)
             {
-                return Unauthorized(new { success = false });
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
             }
         }
 
-        // LOG UD FUNKTION
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
@@ -64,6 +112,6 @@ namespace AdminPanel.Controllers
 
     public class TokenRequest
     {
-        public string IdToken { get; set; }
+        public string IdToken { get; set; } = string.Empty;
     }
 }

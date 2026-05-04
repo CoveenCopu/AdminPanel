@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AdminPanel.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator")]
     public class YearSummariesController : Controller
     {
         private readonly AppDbContext _context;

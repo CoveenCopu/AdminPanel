@@ -3,13 +3,11 @@ using AdminPanel.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+
 
 namespace AdminPanel.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Bruger,Administrator")]
     public class OrdersController : Controller
     {
         private readonly AppDbContext _context;
@@ -19,7 +17,7 @@ namespace AdminPanel.Controllers
             _context = context;
         }
 
-        // GET: Orders
+        // Henter og viser alle ordrer inkl. order items og produkter
         public IActionResult Index()
         {
             var orders = _context.Orders
@@ -29,14 +27,18 @@ namespace AdminPanel.Controllers
             return View(orders);
         }
 
-        // GET: Create
+        // Viser formular til oprettelse af ordre og sender produktliste til view
         public IActionResult Create()
         {
             ViewBag.Produkter = _context.Produkter.ToList();
             return View();
         }
 
-        // POST: Create
+        // Opretter en ny ordre:
+        // - Validerer datoer
+        // - Tjekker lager i perioden
+        // - Opretter OrderItems med fastlåst pris
+        // - Genererer noter automatisk
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Order order, int[] produktId, int[] antal)
@@ -65,11 +67,14 @@ namespace AdminPanel.Controllers
 
             // Tjek antal
             bool fejl = false;
+
             for (int i = 0; i < produktId.Length; i++)
             {
-                if (antal[i] > tilgængelighed[produktId[i]])
+                var ant = (i < antal.Length && antal[i] > 0) ? antal[i] : 0;
+
+                if (ant > tilgængelighed[produktId[i]])
                 {
-                    ModelState.AddModelError("", $"Ikke nok af produktet: {antal[i]} ønsket, maks {tilgængelighed[produktId[i]]}");
+                    ModelState.AddModelError("", $"Ikke nok af produktet: {ant} ønsket, maks {tilgængelighed[produktId[i]]}");
                     fejl = true;
                 }
             }
@@ -80,22 +85,26 @@ namespace AdminPanel.Controllers
                 return View(order);
             }
 
-            // Tilføj OrderItems (ingen låst pris)
+            // Tilføj OrderItems (pris fastlåses ved oprettelse)
+            var priser = _context.Produkter.ToDictionary(p => p.Id, p => p.Pris);
             order.OrderItems = new List<OrderItem>();
+
             for (int i = 0; i < produktId.Length; i++)
             {
-                if (antal[i] > 0)
+                var ant = (i < antal.Length && antal[i] > 0) ? antal[i] : 0;
+
+                if (ant > 0)
                 {
                     order.OrderItems.Add(new OrderItem
                     {
                         ProduktId = produktId[i],
-                        Antal = antal[i],
-                        Price = _context.Produkter.ToDictionary(p => p.Id, p => p.Pris)[produktId[i]]
+                        Antal = ant,
+                        Price = priser[produktId[i]]
                     });
                 }
             }
 
-            // Noter automatisk
+            // Generer noter automatisk (fx "2 x Stol, 1 x Bord")
             order.Noter = string.Join(", ", order.OrderItems.Select(oi =>
                 $"{oi.Antal} x {oi.Produkt?.Navn ?? _context.Produkter.First(p => p.Id == oi.ProduktId).Navn}"));
 
@@ -104,7 +113,7 @@ namespace AdminPanel.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Edit
+        // Henter en ordre og viser den til redigering
         public IActionResult Edit(int id)
         {
             var order = _context.Orders
@@ -117,7 +126,11 @@ namespace AdminPanel.Controllers
             return View(order);
         }
 
-        // POST: Edit
+        // Opdaterer en ordre:
+        // - Opdaterer kundeinfo og datoer
+        // - Tjekker lager uden at tælle denne ordre med
+        // - Genskaber OrderItems med fastlåst pris
+        // - Opdaterer noter
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, Order order, int[] produktId, int[] antal)
@@ -128,14 +141,14 @@ namespace AdminPanel.Controllers
 
             if (dbOrder == null) return NotFound();
 
-            // Opdater kundeinfo og datoer
+            // Opdater basisinfo
             dbOrder.Kunde = order.Kunde;
             dbOrder.By = order.By;
             dbOrder.Adresse = order.Adresse;
             dbOrder.Telefonnummer = order.Telefonnummer;
             dbOrder.Opsætningsdato = order.Opsætningsdato;
             dbOrder.Afhetningsdato = order.Afhetningsdato;
-            dbOrder.Transport = order.Transport;
+            dbOrder.Transport = order.Transport ?? dbOrder.Transport;
 
             // Beregn tilgængelighed minus denne ordre
             var tilgængelighed = _context.Produkter.ToDictionary(p => p.Id, p => p.Beholdning);
@@ -150,11 +163,14 @@ namespace AdminPanel.Controllers
 
             // Tjek antal
             bool fejl = false;
+
             for (int i = 0; i < produktId.Length; i++)
             {
-                if (antal[i] > tilgængelighed[produktId[i]])
+                var ant = (i < antal.Length && antal[i] > 0) ? antal[i] : 0;
+
+                if (ant > tilgængelighed[produktId[i]])
                 {
-                    ModelState.AddModelError("", $"Ikke nok af produktet: {antal[i]} ønsket, maks {tilgængelighed[produktId[i]]}");
+                    ModelState.AddModelError("", $"Ikke nok af produktet: {ant} ønsket, maks {tilgængelighed[produktId[i]]}");
                     fejl = true;
                 }
             }
@@ -165,20 +181,43 @@ namespace AdminPanel.Controllers
                 return View(dbOrder);
             }
 
-            // Opdater OrderItems (ingen låst pris)
+            // Opdater OrderItems (pris fastlåses igen ved redigering)
+            var priser = _context.Produkter.ToDictionary(p => p.Id, p => p.Pris);
+
+            // Gem gamle items (inkl. deres pris)
+            var eksisterendeItems = dbOrder.OrderItems.ToDictionary(oi => oi.ProduktId);
+
             dbOrder.OrderItems.Clear();
+
             for (int i = 0; i < produktId.Length; i++)
             {
-                if (antal[i] > 0)
+                var ant = (i < antal.Length && antal[i] > 0) ? antal[i] : 0;
+
+                if (ant > 0)
                 {
+                    decimal price;
+
+                    if (eksisterendeItems.ContainsKey(produktId[i]))
+                    {
+                        // Brug gammel pris
+                        price = eksisterendeItems[produktId[i]].Price;
+                    }
+                    else
+                    {
+                        // Nyt produkt → brug ny pris
+                        price = priser[produktId[i]];
+                    }
+
                     dbOrder.OrderItems.Add(new OrderItem
                     {
                         ProduktId = produktId[i],
-                        Antal = antal[i]
+                        Antal = ant,
+                        Price = price
                     });
                 }
             }
 
+            // Opdater noter
             dbOrder.Noter = string.Join(", ", dbOrder.OrderItems.Select(oi =>
                 $"{oi.Antal} x {oi.Produkt?.Navn ?? _context.Produkter.First(p => p.Id == oi.ProduktId).Navn}"));
 
@@ -186,7 +225,7 @@ namespace AdminPanel.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Delete
+        // Viser bekræftelse før sletning
         public IActionResult Delete(int id)
         {
             var order = _context.Orders
@@ -198,7 +237,7 @@ namespace AdminPanel.Controllers
             return View(order);
         }
 
-        // POST: Delete
+        // Sletter en ordre
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
@@ -214,7 +253,7 @@ namespace AdminPanel.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // AJAX: tilgængelighed for periode
+        // Returnerer lager-tilgængelighed i en periode (bruges via AJAX)
         [HttpGet]
         public IActionResult Availability(DateTime start, DateTime end)
         {
@@ -233,3 +272,6 @@ namespace AdminPanel.Controllers
         }
     }
 }
+
+
+
