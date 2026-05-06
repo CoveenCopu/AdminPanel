@@ -9,11 +9,14 @@ namespace AdminPanel.Managers
 
         public AccessManager(IUserService userService)
         {
-            _userService = userService;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
         public bool CanAccessAdminPanel(User user)
         {
+            if (user == null)
+                return false;
+
             return _userService.GetUserRole(user) == Role.Administrator;
         }
     }
