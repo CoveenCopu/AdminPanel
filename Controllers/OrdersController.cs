@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AdminPanel.Controllers
 {
-    [Authorize(Roles = "Bruger,Administrator")]
+    [Authorize(Roles = "User,Admin")]
     public class OrdersController : Controller
     {
         private readonly AppDbContext _context;
@@ -86,7 +86,7 @@ namespace AdminPanel.Controllers
             }
 
             // Tilføj OrderItems (pris fastlåses ved oprettelse)
-            var priser = _context.Products.ToDictionary(p => p.Id, p => p.Price);
+            var prices = _context.Products.ToDictionary(p => p.Id, p => p.Price);
             order.OrderItems = new List<OrderItem>();
 
             for (int i = 0; i < productId.Length; i++)
@@ -99,7 +99,7 @@ namespace AdminPanel.Controllers
                     {
                         ProductId = productId[i],
                         Quantity = ant,
-                        Price = priser[productId[i]]
+                        Price = prices[productId[i]]
                     });
                 }
             }
@@ -182,7 +182,7 @@ namespace AdminPanel.Controllers
             }
 
             // Opdater OrderItems (pris fastlåses igen ved redigering)
-            var priser = _context.Products.ToDictionary(p => p.Id, p => p.Price);
+            var prices = _context.Products.ToDictionary(p => p.Id, p => p.Price);
 
             // Gem gamle items (inkl. deres pris)
             var eksisterendeItems = dbOrder.OrderItems.ToDictionary(oi => oi.ProductId);
@@ -205,7 +205,7 @@ namespace AdminPanel.Controllers
                     else
                     {
                         // Nyt produkt → brug ny pris
-                        price = priser[productId[i]];
+                        price = prices[productId[i]];
                     }
 
                     dbOrder.OrderItems.Add(new OrderItem

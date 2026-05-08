@@ -1,10 +1,18 @@
-﻿namespace AdminPanel.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace AdminPanel.Models
 {
     public class Expense
     {
         public int Id { get; set; }
+
+        [Display(Name = "Produkt")]
         public string Product { get; set; }
+
+        [Display(Name = "Dato")]
         public DateTime Date { get; set; }
+
+        [Display(Name = "Antal")]
         public int Quantity
         {
             get => _quantity;
@@ -18,6 +26,7 @@
         }
         private int _quantity { get; set; }
 
+        [Display(Name = "Pris pr. stk.")]
         public decimal PricePerPiece
         {
             get => _PricePerPiece;
@@ -31,6 +40,7 @@
         }
         private decimal _PricePerPiece { get; set; }
 
+        [Display(Name = "Totale pris")]
         public decimal TotalPrice
         {
             get => _totalPrice;
@@ -43,6 +53,8 @@
             }
         }
         private decimal _totalPrice { get; set; }
+
+        [Display(Name = "Noter")]
         public string Notes { get; set; }
     }
 }

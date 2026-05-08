@@ -11,7 +11,7 @@
     <div class="row justify-content-center">
 
         @* Ordrer - både Bruger og Administrator *@
-        @if (User.IsInRole("Bruger") || User.IsInRole("Administrator"))
+        @if (User.IsInRole("User") || User.IsInRole("Admin"))
         {
             <div class="col-md-3 mb-4">
                 <div class="card text-center shadow-lg h-100 border-primary">
@@ -28,7 +28,7 @@
         }
 
         @* Kun Administrator *@
-        @if (User.IsInRole("Administrator"))
+        @if (User.IsInRole("Admin"))
         {
             <!-- Udgifter -->
             <div class="col-md-3 mb-4">

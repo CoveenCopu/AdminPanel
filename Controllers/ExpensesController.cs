@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AdminPanel.Controllers
 {
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = "Admin")]
     public class ExpensesController : Controller
     {
         private readonly AppDbContext _context;
@@ -34,7 +34,7 @@ namespace AdminPanel.Controllers
         // POST: Expenses/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Produkt,Dato,Antal,PrisPrStk,Noter")] Expense expense)
+        public async Task<IActionResult> Create([Bind("Product,Date,Quantity,PricePerPiece,Notes")] Expense expense)
         {
             if (ModelState.IsValid)
             {
@@ -62,7 +62,7 @@ namespace AdminPanel.Controllers
         // POST: Expenses/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Produkt,Dato,Antal,PrisPrStk,Noter")] Expense expense)
+        public async Task<IActionResult> Edit(int id, [Bind("Product,Date,Quantity,PricePerPiece,Notes")] Expense expense)
         {
             var expenseToUpdate = await _context.Expenses.FindAsync(id);
             if (expenseToUpdate == null) return NotFound();
