@@ -20,11 +20,11 @@
         @foreach (var item in Model)
         {
             <tr>
-                <td>@item.År</td>
-                <td>@item.Omsætning.ToString("C")</td>
-                <td>@item.Udgifter.ToString("C")</td>
-                <td>@item.AntalJobs</td>
-                <td>@item.Årsopgørelse.ToString("C")</td>
+                <td>@item.Year</td>
+                <td>@item.Revenue.ToString("C")</td>
+                <td>@item.Expenses.ToString("C")</td>
+                <td>@item.NumberOfJobs</td>
+                <td>@item.YearSummaries.ToString("C")</td>
             </tr>
         }
     </tbody>

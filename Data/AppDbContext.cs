@@ -13,7 +13,7 @@ namespace AdminPanel.Data
         // DbSets for dine tabeller
         public DbSet<Order> Orders { get; set; }
         public DbSet<Expense> Expenses { get; set; }
-        public DbSet<Produkt> Produkter { get; set; }
+        public DbSet<Product> Products { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<User> Users { get; set; }
 

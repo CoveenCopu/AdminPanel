@@ -9,12 +9,12 @@
 <h3>Er du sikker på at du vil slette denne udgift?</h3>
 
 <div>
-    <h4>@Model.Produkt</h4>
-    <div>Dato: @Model.Dato.ToShortDateString()</div>
-    <div>Antal: @Model.Antal</div>
-    <div>Pris pr. stk.: @Model.PrisPrStk.ToString("C")</div>
-    <div>Samlet pris: @Model.TotalPris.ToString("C")</div>
-    <div>Noter: @Model.Noter</div>
+    <h4>@Model.Product</h4>
+    <div>Dato: @Model.Date.ToShortDateString()</div>
+    <div>Antal: @Model.Quantity</div>
+    <div>Pris pr. stk.: @Model.PricePerPiece.ToString("C")</div>
+    <div>Samlet pris: @Model.TotalPrice.ToString("C")</div>
+    <div>Noter: @Model.Notes</div>
 </div>
 
 <form asp-action="Delete" method="post">

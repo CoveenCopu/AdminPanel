@@ -2,8 +2,8 @@
 
 @{
     ViewData["Title"] = "Rediger ordre";
-    var produkter = ViewBag.Produkter as List<AdminPanel.Models.Produkt> ?? new List<AdminPanel.Models.Produkt>();
-    var eksisterende = Model.OrderItems.ToDictionary(oi => oi.ProduktId, oi => oi.Antal);
+    var produkter = ViewBag.Produkter as List<AdminPanel.Models.Product> ?? new List<AdminPanel.Models.Product>();
+    var eksisterende = Model.OrderItems.ToDictionary(oi => oi.ProductId, oi => oi.Quantity);
 }
 
 <h2>Rediger ordre</h2>
@@ -11,30 +11,30 @@
 <form asp-action="Edit" method="post">
     <input type="hidden" asp-for="Id" />
     <div class="form-group mb-2">
-        <label asp-for="Kunde"></label>
-        <input asp-for="Kunde" class="form-control" />
+        <label asp-for="Customer"></label>
+        <input asp-for="Customer" class="form-control" />
     </div>
     <div class="form-group mb-2">
-        <label asp-for="By"></label>
-        <input asp-for="By" class="form-control" />
+        <label asp-for="City"></label>
+        <input asp-for="City" class="form-control" />
     </div>
     <div class="form-group mb-2">
-        <label asp-for="Adresse"></label>
-        <input asp-for="Adresse" class="form-control" />
+        <label asp-for="Address"></label>
+        <input asp-for="Address" class="form-control" />
     </div>
     <div class="form-group mb-2">
-        <label asp-for="Telefonnummer"></label>
-        <input asp-for="Telefonnummer" class="form-control" />
+        <label asp-for="Number"></label>
+        <input asp-for="Number" class="form-control" />
     </div>
     <div class="form-group mb-2">
-        <label asp-for="Opsætningsdato"></label>
-        <input asp-for="Opsætningsdato" type="date" class="form-control" id="opsaetningsdato"
-               value="@Model.Opsætningsdato?.ToString("yyyy-MM-dd")" />
+        <label asp-for="SetupDate"></label>
+        <input asp-for="SetupDate" type="date" class="form-control" id="opsaetningsdato"
+               value="@Model.SetupDate?.ToString("yyyy-MM-dd")" />
     </div>
     <div class="form-group mb-2">
-        <label asp-for="Afhetningsdato"></label>
-        <input asp-for="Afhetningsdato" type="date" class="form-control" id="afhaentningsdato"
-               value="@Model.Afhetningsdato?.ToString("yyyy-MM-dd")" />
+        <label asp-for="PickupDate"></label>
+        <input asp-for="PickupDate" type="date" class="form-control" id="afhaentningsdato"
+               value="@Model.PickupDate?.ToString("yyyy-MM-dd")" />
     </div>
     <div class="form-group mb-2">
         <label asp-for="Transport"></label>
@@ -57,13 +57,13 @@
                 int pid = produkter[i].Id;
                 int antal = eksisterende.ContainsKey(pid) ? eksisterende[pid] : 0;
                 <tr>
-                    <td>@produkter[i].Navn</td>
-                    <td>@produkter[i].Pris.ToString("C")</td>
+                    <td>@produkter[i].Name</td>
+                    <td>@produkter[i].Price.ToString("C")</td>
                     <td id="tilgaengelig_@pid">0</td>
                     <td>
                         <input type="hidden" name="produktId" value="@pid" />
                         <input type="number" name="antal" min="0" value="@antal"
-                               class="form-control antal-input" data-prodid="@pid" data-produktnavn="@produkter[i].Navn" />
+                               class="form-control antal-input" data-prodid="@pid" data-produktnavn="@produkter[i].Name" />
                     </td>
                 </tr>
             }
@@ -71,8 +71,8 @@
     </table>
 
     <div class="form-group mb-2">
-        <label asp-for="Noter"></label>
-        <input asp-for="Noter" id="noter" class="form-control" readonly value="@Model.Noter" />
+        <label asp-for="Notes"></label>
+        <input asp-for="Notes" id="noter" class="form-control" readonly value="@Model.Notes" />
     </div>
 
     <button type="submit" class="btn btn-primary">Gem ændringer</button>

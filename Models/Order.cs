@@ -3,19 +3,19 @@
 public class Order
 {
     public int Id { get; set; }
-    public string Kunde { get; set; }
-    public string By { get; set; }
-    public string Adresse { get; set; }
-    public string Telefonnummer { get; set; }
-    public DateTime? Opsætningsdato { get; set; }
-    public DateTime? Afhetningsdato { get; set; }
+    public string Customer { get; set; }
+    public string City { get; set; }
+    public string Address { get; set; }
+    public string Number { get; set; }
+    public DateTime? SetupDate { get; set; }
+    public DateTime? PickupDate { get; set; }
 
     public decimal? Transport { get; set; } // Decimal
 
     // Beregnet pris ud fra produktets aktuelle pris
-    public decimal Pris => OrderItems?.Sum(oi => oi.TotalPris) ?? 0;
+    public decimal Price => OrderItems?.Sum(oi => oi.TotalPrice) ?? 0;
 
-    public string? Noter { get; set; }
+    public string? Notes { get; set; }
 
     public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 }

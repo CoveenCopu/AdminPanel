@@ -1,25 +1,25 @@
 ﻿namespace AdminPanel.Models
 {
-    public class Produkt
+    public class Product
     {
         public int Id { get; set; }
-        public string Navn { get; set; }
-        public decimal Pris { get; set; }
+        public string Name { get; set; }
+        public decimal Price { get; set; }
         public string? Info { get; set; }
 
         // Ny: antal på lager
-        public int Beholdning
+        public int Inventory
         {
-            get => _beholdning;
+            get => _inventory;
             set
             {
                 if (value < 0)
                     throw new ArgumentException("Beholdning kan ikke være negativ");
 
-                _beholdning = value;
+                _inventory = value;
             }
         }
-        private int _beholdning { get; set; }
+        private int _inventory { get; set; }
 
     }
 }

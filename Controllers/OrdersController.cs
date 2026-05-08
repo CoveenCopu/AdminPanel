@@ -22,7 +22,7 @@ namespace AdminPanel.Controllers
         {
             var orders = _context.Orders
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Produkt)
+                .ThenInclude(oi => oi.Product)
                 .ToList();
             return View(orders);
         }
@@ -30,7 +30,7 @@ namespace AdminPanel.Controllers
         // Viser formular til oprettelse af ordre og sender produktliste til view
         public IActionResult Create()
         {
-            ViewBag.Produkter = _context.Produkter.ToList();
+            ViewBag.Produkter = _context.Products.ToList();
             return View();
         }
 
@@ -41,55 +41,55 @@ namespace AdminPanel.Controllers
         // - Genererer noter automatisk
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Order order, int[] produktId, int[] antal)
+        public IActionResult Create(Order order, int[] productId, int[] antal)
         {
-            if (order.Opsætningsdato == null)
+            if (order.SetupDate == null)
                 ModelState.AddModelError("Opsætningsdato", "Startdato kræves");
-            if (order.Afhetningsdato == null)
+            if (order.PickupDate == null)
                 ModelState.AddModelError("Afhetningsdato", "Slutdato kræves");
 
             if (!ModelState.IsValid)
             {
-                ViewBag.Produkter = _context.Produkter.ToList();
+                ViewBag.Produkter = _context.Products.ToList();
                 return View(order);
             }
 
             // Beregn tilgængelighed i perioden
-            var tilgængelighed = _context.Produkter.ToDictionary(p => p.Id, p => p.Beholdning);
+            var tilgængelighed = _context.Products.ToDictionary(p => p.Id, p => p.Inventory);
             var ordersIPeriode = _context.Orders
                 .Include(o => o.OrderItems)
-                .Where(o => o.Opsætningsdato <= order.Afhetningsdato && o.Afhetningsdato >= order.Opsætningsdato)
+                .Where(o => o.SetupDate <= order.PickupDate && o.PickupDate >= order.SetupDate)
                 .ToList();
 
             foreach (var o in ordersIPeriode)
                 foreach (var oi in o.OrderItems)
-                    tilgængelighed[oi.ProduktId] -= oi.Antal;
+                    tilgængelighed[oi.ProductId] -= oi.Quantity;
 
             // Tjek antal
             bool fejl = false;
 
-            for (int i = 0; i < produktId.Length; i++)
+            for (int i = 0; i < productId.Length; i++)
             {
                 var ant = (i < antal.Length && antal[i] > 0) ? antal[i] : 0;
 
-                if (ant > tilgængelighed[produktId[i]])
+                if (ant > tilgængelighed[productId[i]])
                 {
-                    ModelState.AddModelError("", $"Ikke nok af produktet: {ant} ønsket, maks {tilgængelighed[produktId[i]]}");
+                    ModelState.AddModelError("", $"Ikke nok af produktet: {ant} ønsket, maks {tilgængelighed[productId[i]]}");
                     fejl = true;
                 }
             }
 
             if (fejl)
             {
-                ViewBag.Produkter = _context.Produkter.ToList();
+                ViewBag.Produkter = _context.Products.ToList();
                 return View(order);
             }
 
             // Tilføj OrderItems (pris fastlåses ved oprettelse)
-            var priser = _context.Produkter.ToDictionary(p => p.Id, p => p.Pris);
+            var priser = _context.Products.ToDictionary(p => p.Id, p => p.Price);
             order.OrderItems = new List<OrderItem>();
 
-            for (int i = 0; i < produktId.Length; i++)
+            for (int i = 0; i < productId.Length; i++)
             {
                 var ant = (i < antal.Length && antal[i] > 0) ? antal[i] : 0;
 
@@ -97,16 +97,16 @@ namespace AdminPanel.Controllers
                 {
                     order.OrderItems.Add(new OrderItem
                     {
-                        ProduktId = produktId[i],
-                        Antal = ant,
-                        Price = priser[produktId[i]]
+                        ProductId = productId[i],
+                        Quantity = ant,
+                        Price = priser[productId[i]]
                     });
                 }
             }
 
             // Generer noter automatisk (fx "2 x Stol, 1 x Bord")
-            order.Noter = string.Join(", ", order.OrderItems.Select(oi =>
-                $"{oi.Antal} x {oi.Produkt?.Navn ?? _context.Produkter.First(p => p.Id == oi.ProduktId).Navn}"));
+            order.Notes = string.Join(", ", order.OrderItems.Select(oi =>
+                $"{oi.Quantity} x {oi.Product?.Name ?? _context.Products.First(p => p.Id == oi.ProductId).Name}"));
 
             _context.Orders.Add(order);
             _context.SaveChanges();
@@ -118,11 +118,11 @@ namespace AdminPanel.Controllers
         {
             var order = _context.Orders
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Produkt)
+                .ThenInclude(oi => oi.Product)
                 .FirstOrDefault(o => o.Id == id);
 
             if (order == null) return NotFound();
-            ViewBag.Produkter = _context.Produkter.ToList();
+            ViewBag.Produkter = _context.Products.ToList();
             return View(order);
         }
 
@@ -133,7 +133,7 @@ namespace AdminPanel.Controllers
         // - Opdaterer noter
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Order order, int[] produktId, int[] antal)
+        public IActionResult Edit(int id, Order order, int[] productId, int[] quantity)
         {
             var dbOrder = _context.Orders
                 .Include(o => o.OrderItems)
@@ -142,84 +142,84 @@ namespace AdminPanel.Controllers
             if (dbOrder == null) return NotFound();
 
             // Opdater basisinfo
-            dbOrder.Kunde = order.Kunde;
-            dbOrder.By = order.By;
-            dbOrder.Adresse = order.Adresse;
-            dbOrder.Telefonnummer = order.Telefonnummer;
-            dbOrder.Opsætningsdato = order.Opsætningsdato;
-            dbOrder.Afhetningsdato = order.Afhetningsdato;
+            dbOrder.Customer = order.Customer;
+            dbOrder.City = order.City;
+            dbOrder.Address = order.Address;
+            dbOrder.Number = order.Number;
+            dbOrder.SetupDate = order.SetupDate;
+            dbOrder.PickupDate = order.PickupDate;
             dbOrder.Transport = order.Transport ?? dbOrder.Transport;
 
             // Beregn tilgængelighed minus denne ordre
-            var tilgængelighed = _context.Produkter.ToDictionary(p => p.Id, p => p.Beholdning);
+            var tilgængelighed = _context.Products.ToDictionary(p => p.Id, p => p.Inventory);
             var ordersIPeriode = _context.Orders
                 .Include(o => o.OrderItems)
-                .Where(o => o.Id != id && o.Opsætningsdato <= dbOrder.Afhetningsdato && o.Afhetningsdato >= dbOrder.Opsætningsdato)
+                .Where(o => o.Id != id && o.SetupDate <= dbOrder.PickupDate && o.PickupDate >= dbOrder.SetupDate)
                 .ToList();
 
             foreach (var o in ordersIPeriode)
                 foreach (var oi in o.OrderItems)
-                    tilgængelighed[oi.ProduktId] -= oi.Antal;
+                    tilgængelighed[oi.ProductId] -= oi.Quantity;
 
             // Tjek antal
             bool fejl = false;
 
-            for (int i = 0; i < produktId.Length; i++)
+            for (int i = 0; i < productId.Length; i++)
             {
-                var ant = (i < antal.Length && antal[i] > 0) ? antal[i] : 0;
+                var ant = (i < quantity.Length && quantity[i] > 0) ? quantity[i] : 0;
 
-                if (ant > tilgængelighed[produktId[i]])
+                if (ant > tilgængelighed[productId[i]])
                 {
-                    ModelState.AddModelError("", $"Ikke nok af produktet: {ant} ønsket, maks {tilgængelighed[produktId[i]]}");
+                    ModelState.AddModelError("", $"Ikke nok af produktet: {ant} ønsket, maks {tilgængelighed[productId[i]]}");
                     fejl = true;
                 }
             }
 
             if (fejl)
             {
-                ViewBag.Produkter = _context.Produkter.ToList();
+                ViewBag.Produkter = _context.Products.ToList();
                 return View(dbOrder);
             }
 
             // Opdater OrderItems (pris fastlåses igen ved redigering)
-            var priser = _context.Produkter.ToDictionary(p => p.Id, p => p.Pris);
+            var priser = _context.Products.ToDictionary(p => p.Id, p => p.Price);
 
             // Gem gamle items (inkl. deres pris)
-            var eksisterendeItems = dbOrder.OrderItems.ToDictionary(oi => oi.ProduktId);
+            var eksisterendeItems = dbOrder.OrderItems.ToDictionary(oi => oi.ProductId);
 
             dbOrder.OrderItems.Clear();
 
-            for (int i = 0; i < produktId.Length; i++)
+            for (int i = 0; i < productId.Length; i++)
             {
-                var ant = (i < antal.Length && antal[i] > 0) ? antal[i] : 0;
+                var ant = (i < quantity.Length && quantity[i] > 0) ? quantity[i] : 0;
 
                 if (ant > 0)
                 {
                     decimal price;
 
-                    if (eksisterendeItems.ContainsKey(produktId[i]))
+                    if (eksisterendeItems.ContainsKey(productId[i]))
                     {
                         // Brug gammel pris
-                        price = eksisterendeItems[produktId[i]].Price;
+                        price = eksisterendeItems[productId[i]].Price;
                     }
                     else
                     {
                         // Nyt produkt → brug ny pris
-                        price = priser[produktId[i]];
+                        price = priser[productId[i]];
                     }
 
                     dbOrder.OrderItems.Add(new OrderItem
                     {
-                        ProduktId = produktId[i],
-                        Antal = ant,
+                        ProductId = productId[i],
+                        Quantity = ant,
                         Price = price
                     });
                 }
             }
 
             // Opdater noter
-            dbOrder.Noter = string.Join(", ", dbOrder.OrderItems.Select(oi =>
-                $"{oi.Antal} x {oi.Produkt?.Navn ?? _context.Produkter.First(p => p.Id == oi.ProduktId).Navn}"));
+            dbOrder.Notes = string.Join(", ", dbOrder.OrderItems.Select(oi =>
+                $"{oi.Quantity} x {oi.Product?.Name ?? _context.Products.First(p => p.Id == oi.ProductId).Name}"));
 
             _context.SaveChanges();
             return RedirectToAction(nameof(Index));
@@ -230,7 +230,7 @@ namespace AdminPanel.Controllers
         {
             var order = _context.Orders
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Produkt)
+                .ThenInclude(oi => oi.Product)
                 .FirstOrDefault(o => o.Id == id);
 
             if (order == null) return NotFound();
@@ -257,16 +257,16 @@ namespace AdminPanel.Controllers
         [HttpGet]
         public IActionResult Availability(DateTime start, DateTime end)
         {
-            var tilgængelighed = _context.Produkter.ToDictionary(p => p.Id, p => p.Beholdning);
+            var tilgængelighed = _context.Products.ToDictionary(p => p.Id, p => p.Inventory);
 
             var ordersIPeriode = _context.Orders
                 .Include(o => o.OrderItems)
-                .Where(o => o.Opsætningsdato <= end && o.Afhetningsdato >= start)
+                .Where(o => o.SetupDate <= end && o.PickupDate >= start)
                 .ToList();
 
             foreach (var o in ordersIPeriode)
                 foreach (var oi in o.OrderItems)
-                    tilgængelighed[oi.ProduktId] -= oi.Antal;
+                    tilgængelighed[oi.ProductId] -= oi.Quantity;
 
             return Json(tilgængelighed);
         }

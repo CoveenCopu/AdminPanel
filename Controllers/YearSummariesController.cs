@@ -22,13 +22,13 @@ namespace AdminPanel.Controllers
         {
             // Find alle år med Orders eller Expenses
             var orderYears = await _context.Orders
-                .Where(o => o.Opsætningsdato.HasValue)
-                .Select(o => o.Opsætningsdato.Value.Year)
+                .Where(o => o.SetupDate.HasValue)
+                .Select(o => o.SetupDate.Value.Year)
                 .Distinct()
                 .ToListAsync();
 
             var expenseYears = await _context.Expenses
-                .Select(e => e.Dato.Year)
+                .Select(e => e.Date.Year)
                 .Distinct()
                 .ToListAsync();
 
@@ -41,24 +41,24 @@ namespace AdminPanel.Controllers
                 // Hent orders for året
                 var ordersForYear = _context.Orders
                     .Include(o => o.OrderItems)
-                        .ThenInclude(oi => oi.Produkt)
-                    .Where(o => o.Opsætningsdato.HasValue && o.Opsætningsdato.Value.Year == year)
+                        .ThenInclude(oi => oi.Product)
+                    .Where(o => o.SetupDate.HasValue && o.SetupDate.Value.Year == year)
                     .AsEnumerable(); // Client-side beregning
 
-                decimal omsætning = ordersForYear.Sum(o => o.Pris + (o.Transport ?? 0));
+                decimal omsætning = ordersForYear.Sum(o => o.Price + (o.Transport ?? 0));
                 decimal udgifter = _context.Expenses
-                    .Where(e => e.Dato.Year == year)
-                    .Sum(e => e.TotalPris);
+                    .Where(e => e.Date.Year == year)
+                    .Sum(e => e.TotalPrice);
 
                 int antalJobs = ordersForYear.Count();
 
                 summaries.Add(new YearSummary
                 {
-                    År = year,
-                    Omsætning = omsætning,
-                    Udgifter = udgifter,
-                    AntalJobs = antalJobs,
-                    Årsopgørelse = omsætning - udgifter
+                    Year = year,
+                    Revenue = omsætning,
+                    Expenses = udgifter,
+                    NumberOfJobs = antalJobs,
+                    YearSummaries = omsætning - udgifter
                 });
             }
 

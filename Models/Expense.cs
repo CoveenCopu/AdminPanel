@@ -3,46 +3,46 @@
     public class Expense
     {
         public int Id { get; set; }
-        public string Produkt { get; set; }
-        public DateTime Dato { get; set; }
-        public int Antal
+        public string Product { get; set; }
+        public DateTime Date { get; set; }
+        public int Quantity
         {
-            get => _antal;
+            get => _quantity;
             set
             {
                 if (value < 0)
                     throw new ArgumentException("Antal kan ikke være negativ");
 
-                _antal = value;
+                _quantity = value;
             }
         }
-        private int _antal { get; set; }
+        private int _quantity { get; set; }
 
-        public decimal PrisPrStk
+        public decimal PricePerPiece
         {
-            get => _prisPrStk;
+            get => _PricePerPiece;
             set
             {
                 if (value < 0)
                     throw new ArgumentException("pris.pr.stk kan ikke være negativ");
 
-                _prisPrStk = value;
+                _PricePerPiece = value;
             }
         }
-        private decimal _prisPrStk { get; set; }
+        private decimal _PricePerPiece { get; set; }
 
-        public decimal TotalPris
+        public decimal TotalPrice
         {
-            get => _totalPris;
+            get => _totalPrice;
             set
             {
                 if (value < 0)
                     throw new ArgumentException("Totalpris kan ikke være negativ");
 
-                _totalPris = value;
+                _totalPrice = value;
             }
         }
-        private decimal _totalPris { get; set; }
-        public string Noter { get; set; }
+        private decimal _totalPrice { get; set; }
+        public string Notes { get; set; }
     }
 }

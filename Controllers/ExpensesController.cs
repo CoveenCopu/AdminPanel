@@ -39,7 +39,7 @@ namespace AdminPanel.Controllers
             if (ModelState.IsValid)
             {
                 // Beregn TotalPris
-                expense.TotalPris = expense.Antal * expense.PrisPrStk;
+                expense.TotalPrice = expense.Quantity * expense.PricePerPiece;
 
                 _context.Add(expense);
                 await _context.SaveChangesAsync();
@@ -70,14 +70,14 @@ namespace AdminPanel.Controllers
             if (ModelState.IsValid)
             {
                 // Opdater felter
-                expenseToUpdate.Produkt = expense.Produkt;
-                expenseToUpdate.Dato = expense.Dato;
-                expenseToUpdate.Antal = expense.Antal;
-                expenseToUpdate.PrisPrStk = expense.PrisPrStk;
-                expenseToUpdate.Noter = expense.Noter;
+                expenseToUpdate.Product = expense.Product;
+                expenseToUpdate.Date = expense.Date;
+                expenseToUpdate.Quantity = expense.Quantity;
+                expenseToUpdate.PricePerPiece = expense.PricePerPiece;
+                expenseToUpdate.Notes = expense.Notes;
 
                 // Beregn TotalPris igen
-                expenseToUpdate.TotalPris = expenseToUpdate.Antal * expenseToUpdate.PrisPrStk;
+                expenseToUpdate.TotalPrice = expenseToUpdate.Quantity * expenseToUpdate.PricePerPiece;
 
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));

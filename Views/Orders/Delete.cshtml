@@ -5,10 +5,10 @@
 <h4>Er du sikker på, du vil slette denne ordre?</h4>
 
 <div>
-    <b>Kunde:</b> @Model.Kunde <br />
-    <b>Adresse:</b> @Model.Adresse <br />
-    <b>Pris:</b> @Model.OrderItems.Sum(oi => (oi.Produkt?.Pris ?? 0) * oi.Antal).ToString("C") <br />
-    <b>Noter:</b> @Model.Noter
+    <b>Kunde:</b> @Model.Customer <br />
+    <b>Adresse:</b> @Model.Address <br />
+    <b>Pris:</b> @Model.OrderItems.Sum(oi => (oi.Product?.Price ?? 0) * oi.Quantity).ToString("C") <br />
+    <b>Noter:</b> @Model.Notes
 </div>
 
 <form asp-action="Delete" method="post">

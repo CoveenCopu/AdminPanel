@@ -8,8 +8,8 @@ namespace AdminPanel.Models
         public int OrderId { get; set; }
         public Order Order { get; set; }
 
-        public int ProduktId { get; set; }
-        public Produkt Produkt { get; set; }
+        public int ProductId { get; set; }
+        public Product Product { get; set; }
 
         public decimal Price
         {
@@ -24,20 +24,20 @@ namespace AdminPanel.Models
         }
         private decimal _price { get; set; }
 
-        public int Antal
+        public int Quantity
         {
-            get => _antal;
+            get => _quantity;
             set
             {
                 if (value < 0)
                     throw new ArgumentException("Antal kan ikke være negativ");
 
-                _antal = value;
+                _quantity = value;
             }
         }
-        private int _antal { get; set; }
+        private int _quantity { get; set; }
 
         // Beregn pris dynamisk fra produkt
-        public decimal TotalPris => Price * (decimal)Antal;
+        public decimal TotalPrice => Price * (decimal)Quantity;
     }
 }
