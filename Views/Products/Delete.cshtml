@@ -1,0 +1,57 @@
+﻿@model AdminPanel.Models.Product
+
+@{
+    // Titel som vises i browser/tab
+    ViewData["Title"] = "Slet produkt";
+}
+
+<!-- Overskrift -->
+<h2>Slet produkt</h2>
+
+<!-- Bekræftelse -->
+<h3>
+    Er du sikker på, at du vil slette produktet?
+</h3>
+
+<!-- Produkt information -->
+<div>
+
+    <!-- Produkt navn -->
+    <h4>
+        @Model.Name
+    </h4>
+
+    <!-- Pris -->
+    <div>
+        Pris: @Model.Price.ToString("C")
+    </div>
+
+    <!-- Info -->
+    <div>
+        Info: @Model.Info
+    </div>
+
+</div>
+
+<!-- Formular til sletning -->
+<form asp-action="Delete" method="post">
+
+    <!-- Skjult ID -->
+    <input type="hidden"
+           asp-for="Id" />
+
+    <!-- Slet knap -->
+    <button type="submit"
+            class="btn btn-danger">
+
+        Slet
+    </button>
+
+    <!-- Tilbage/annuller -->
+    <a asp-action="Index"
+       class="btn btn-secondary">
+
+        Annuller
+    </a>
+
+</form>

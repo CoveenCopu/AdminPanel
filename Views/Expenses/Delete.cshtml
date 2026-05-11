@@ -1,24 +1,64 @@
 ﻿@model AdminPanel.Models.Expense
 
 @{
+    // Titel som vises i browser/tab
     ViewData["Title"] = "Slet Udgift";
 }
 
+<!-- Overskrift -->
 <h2>Slet Udgift</h2>
 
+<!-- Bekræftelse -->
 <h3>Er du sikker på at du vil slette denne udgift?</h3>
 
+<!-- Viser information om udgiften -->
 <div>
+
+    <!-- Produkt navn -->
     <h4>@Model.Product</h4>
-    <div>Dato: @Model.Date.ToShortDateString()</div>
-    <div>Antal: @Model.Quantity</div>
-    <div>Pris pr. stk.: @Model.PricePerPiece.ToString("C")</div>
-    <div>Samlet pris: @Model.TotalPrice.ToString("C")</div>
-    <div>Noter: @Model.Notes</div>
+
+    <!-- Dato -->
+    <div>
+        Dato: @Model.Date.ToShortDateString()
+    </div>
+
+    <!-- Antal -->
+    <div>
+        Antal: @Model.Quantity
+    </div>
+
+    <!-- Pris pr stk -->
+    <div>
+        Pris pr. stk.: @Model.PricePerPiece.ToString("C")
+    </div>
+
+    <!-- Samlet pris -->
+    <div>
+        Samlet pris: @Model.TotalPrice.ToString("C")
+    </div>
+
+    <!-- Noter -->
+    <div>
+        Noter: @Model.Notes
+    </div>
 </div>
 
+<!-- Formular som sletter udgiften -->
 <form asp-action="Delete" method="post">
+
+    <!-- Skjult ID felt -->
     <input type="hidden" asp-for="Id" />
-    <button type="submit" class="btn btn-danger">Delete</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+
+    <!-- Slet knap -->
+    <button type="submit"
+            class="btn btn-danger">
+        Delete
+    </button>
+
+    <!-- Tilbage/annuller -->
+    <a asp-action="Index"
+       class="btn btn-secondary">
+        Cancel
+    </a>
+
 </form>

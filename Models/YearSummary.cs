@@ -2,10 +2,21 @@
 {
     public class YearSummary
     {
+        // Årstal for årsopgørelsen
         public int Year { get; set; }
-        public decimal Revenue { get; set; }       // Sum af Orders (inkl. Transport)
-        public decimal Expenses { get; set; }        // Sum af Expenses
-        public int NumberOfJobs { get; set; }           // Antal Orders
-        public decimal YearSummaries { get; set; }    // Omsætning - Udgifter
+
+        // Samlet omsætning fra ordrer
+        // Inkluderer også transport
+        public decimal Revenue { get; set; }
+
+        // Samlede udgifter
+        public decimal Expenses { get; set; }
+
+        // Antal jobs/ordrer i året
+        public int NumberOfJobs { get; set; }
+
+        // Årets resultat
+        // Omsætning - udgifter
+        public decimal YearSummaries { get; set; }
     }
 }

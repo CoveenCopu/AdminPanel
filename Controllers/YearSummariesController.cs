@@ -8,60 +8,88 @@ using System.Threading.Tasks;
 
 namespace AdminPanel.Controllers
 {
+    // Kun admins må bruge YearSummaries controller
     [Authorize(Roles = "Admin")]
     public class YearSummariesController : Controller
     {
+        // Database context
         private readonly AppDbContext _context;
 
+        // Constructor som injicerer database context
         public YearSummariesController(AppDbContext context)
         {
             _context = context;
         }
 
+        // Henter og viser årsopgørelser
         public async Task<IActionResult> Index()
         {
-            // Find alle år med Orders eller Expenses
+            // Finder alle år hvor der findes ordrer
             var orderYears = await _context.Orders
                 .Where(o => o.SetupDate.HasValue)
                 .Select(o => o.SetupDate.Value.Year)
                 .Distinct()
                 .ToListAsync();
 
+            // Finder alle år hvor der findes udgifter
             var expenseYears = await _context.Expenses
                 .Select(e => e.Date.Year)
                 .Distinct()
                 .ToListAsync();
 
-            var years = orderYears.Union(expenseYears).OrderByDescending(y => y);
+            // Samler alle år og sorterer dem faldende
+            var years = orderYears
+                .Union(expenseYears)
+                .OrderByDescending(y => y);
 
+            // Liste som skal indeholde årsopgørelser
             var summaries = new List<YearSummary>();
 
+            // Gennemgår hvert år
             foreach (var year in years)
             {
-                // Hent orders for året
+                // Finder alle ordrer for året
                 var ordersForYear = _context.Orders
                     .Include(o => o.OrderItems)
-                        .ThenInclude(oi => oi.Product)
-                    .Where(o => o.SetupDate.HasValue && o.SetupDate.Value.Year == year)
-                    .AsEnumerable(); // Client-side beregning
+                    .ThenInclude(oi => oi.Product)
+                    .Where(o =>
+                        o.SetupDate.HasValue &&
+                        o.SetupDate.Value.Year == year)
+                    .AsEnumerable();
 
-                decimal omsætning = ordersForYear.Sum(o => o.Price + (o.Transport ?? 0));
-                decimal udgifter = _context.Expenses
+                // Beregner omsætning
+                // Pris + transport
+                decimal revenue = ordersForYear
+                    .Sum(o => o.Price + (o.Transport ?? 0));
+
+                // Beregner samlede udgifter
+                decimal expenses = _context.Expenses
                     .Where(e => e.Date.Year == year)
                     .Sum(e => e.TotalPrice);
 
-                int antalJobs = ordersForYear.Count();
+                // Tæller antal jobs/ordrer
+                int numberOfJobs = ordersForYear.Count();
 
+                // Tilføjer årsopgørelse til liste
                 summaries.Add(new YearSummary
                 {
                     Year = year,
-                    Revenue = omsætning,
-                    Expenses = udgifter,
-                    NumberOfJobs = antalJobs,
-                    YearSummaries = omsætning - udgifter
+
+                    // Samlet omsætning
+                    Revenue = revenue,
+
+                    // Samlede udgifter
+                    Expenses = expenses,
+
+                    // Antal jobs
+                    NumberOfJobs = numberOfJobs,
+
+                    // Overskud = omsætning - udgifter
+                    YearSummaries = revenue - expenses
                 });
             }
 
+            // Sender liste til view
             return View(summaries);
         }
     }

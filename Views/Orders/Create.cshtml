@@ -1,44 +1,94 @@
 ﻿@model AdminPanel.Models.Order
 
 @{
+    // Titel som vises i browser/tab
     ViewData["Title"] = "Tilføj ordre";
-    var produkter = ViewBag.Produkter as List<AdminPanel.Models.Product> ?? new List<AdminPanel.Models.Product>();
+
+    // Henter produkter fra ViewBag
+    var produkter =
+        ViewBag.Produkter as List<AdminPanel.Models.Product>
+        ?? new List<AdminPanel.Models.Product>();
 }
 
+<!-- Overskrift -->
 <h2>Tilføj ordre</h2>
 
+<!-- Formular til oprettelse af ordre -->
 <form asp-action="Create" method="post">
+
+    <!-- Kunde -->
     <div class="form-group mb-2">
+
         <label asp-for="Customer"></label>
-        <input asp-for="Customer" class="form-control" />
-    </div>
-    <div class="form-group mb-2">
-        <label asp-for="City"></label>
-        <input asp-for="City" class="form-control" />
-    </div>
-    <div class="form-group mb-2">
-        <label asp-for="Address"></label>
-        <input asp-for="Address" class="form-control" />
-    </div>
-    <div class="form-group mb-2">
-        <label asp-for="Number"></label>
-        <input asp-for="Number" class="form-control" />
-    </div>
-    <div class="form-group mb-2">
-        <label asp-for="SetupDate"></label>
-        <input asp-for="SetupDate" type="date" id="opsaetningsdato" class="form-control" />
-    </div>
-    <div class="form-group mb-2">
-        <label asp-for="PickupDate"></label>
-        <input asp-for="PickupDate" type="date" id="afhaentningsdato" class="form-control" />
-    </div>
-    <div class="form-group mb-2">
-        <label asp-for="Transport"></label>
-        <input asp-for="Transport" class="form-control" />
+
+        <input asp-for="Customer"
+               class="form-control" />
     </div>
 
+    <!-- By -->
+    <div class="form-group mb-2">
+
+        <label asp-for="City"></label>
+
+        <input asp-for="City"
+               class="form-control" />
+    </div>
+
+    <!-- Adresse -->
+    <div class="form-group mb-2">
+
+        <label asp-for="Address"></label>
+
+        <input asp-for="Address"
+               class="form-control" />
+    </div>
+
+    <!-- Telefonnummer -->
+    <div class="form-group mb-2">
+
+        <label asp-for="Number"></label>
+
+        <input asp-for="Number"
+               class="form-control" />
+    </div>
+
+    <!-- Opsætningsdato -->
+    <div class="form-group mb-2">
+
+        <label asp-for="SetupDate"></label>
+
+        <input asp-for="SetupDate"
+               type="date"
+               id="opsaetningsdato"
+               class="form-control" />
+    </div>
+
+    <!-- Afhentningsdato -->
+    <div class="form-group mb-2">
+
+        <label asp-for="PickupDate"></label>
+
+        <input asp-for="PickupDate"
+               type="date"
+               id="afhaentningsdato"
+               class="form-control" />
+    </div>
+
+    <!-- Transport -->
+    <div class="form-group mb-2">
+
+        <label asp-for="Transport"></label>
+
+        <input asp-for="Transport"
+               class="form-control" />
+    </div>
+
+    <!-- Produktliste -->
     <h4>Produkter</h4>
+
     <table class="table table-bordered">
+
+        <!-- Tabel overskrifter -->
         <thead>
             <tr>
                 <th>Produkt</th>
@@ -47,96 +97,235 @@
                 <th>Antal</th>
             </tr>
         </thead>
+
+        <!-- Tabel data -->
         <tbody>
+
+            <!-- Gennemgår alle produkter -->
             @for (int i = 0; i < produkter.Count; i++)
             {
                 int pid = produkter[i].Id;
+
                 <tr>
+
+                    <!-- Produkt navn -->
                     <td>@produkter[i].Name</td>
-                    <td>@produkter[i].Price.ToString("C")</td>
-                    <td id="tilgaengelig_@pid">0</td>
+
+                    <!-- Produkt pris -->
                     <td>
-                        <input type="hidden" name="produktId" value="@pid" />
-                        <input type="number" name="antal" min="0" value="0"
-                               class="form-control antal-input" data-prodid="@pid" data-produktnavn="@produkter[i].Name" />
+                        @produkter[i].Price.ToString("C")
                     </td>
+
+                    <!-- Tilgængeligt lager -->
+                    <td id="tilgaengelig_@pid">
+                        0
+                    </td>
+
+                    <!-- Antal input -->
+                    <td>
+
+                        <!-- Skjult productId -->
+                        <input type="hidden"
+                               name="productId"
+                               value="@pid" />
+
+                        <!-- Antal input -->
+                        <input type="number"
+                               name="quantity"
+                               min="0"
+                               value="0"
+                               class="form-control antal-input"
+                               data-prodid="@pid"
+                               data-produktnavn="@produkter[i].Name" />
+                    </td>
+
                 </tr>
             }
+
         </tbody>
     </table>
 
+    <!-- Noter -->
     <div class="form-group mb-2">
+
         <label asp-for="Notes"></label>
-        <input asp-for="Notes" id="noter" class="form-control" readonly />
+
+        <!-- Readonly fordi noter genereres automatisk -->
+        <input asp-for="Notes"
+               id="noter"
+               class="form-control"
+               readonly />
     </div>
 
-    <button type="submit" class="btn btn-primary">Gem ordre</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    <!-- Gem knap -->
+    <button type="submit"
+            class="btn btn-primary">
+
+        Gem ordre
+    </button>
+
+    <!-- Tilbage/annuller -->
+    <a asp-action="Index"
+       class="btn btn-secondary">
+
+        Cancel
+    </a>
+
 </form>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-    <script>
-        const opsInput = document.getElementById('opsaetningsdato');
-        const afhInput = document.getElementById('afhaentningsdato');
-        const antalInputs = document.querySelectorAll('.antal-input');
-        const noterInput = document.getElementById('noter');
 
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        // Henter dato inputs
+        const opsInput =
+            document.getElementById('opsaetningsdato');
+
+        const afhInput =
+            document.getElementById('afhaentningsdato');
+
+        // Henter alle quantity inputs
+        const antalInputs =
+            document.querySelectorAll('.antal-input');
+
+        // Henter notes input
+        const noterInput =
+            document.getElementById('noter');
+
+        // Opdaterer lagerstatus
         async function updateTilgængelighed() {
+
             const opsDato = opsInput.value;
             const afhDato = afhInput.value;
-            if (!opsDato || !afhDato) return;
+
+            // Stop hvis datoer mangler
+            if (!opsDato || !afhDato)
+                return;
 
             try {
-                const response = await fetch(`/Orders/Availability?start=${opsDato}&end=${afhDato}`);
+
+                // Kalder backend API
+                const response =
+                    await fetch(`/Orders/Availability?start=${opsDato}&end=${afhDato}`);
+
+                // Konverterer JSON
                 const data = await response.json();
 
+                // Gennemgår alle inputs
                 antalInputs.forEach(input => {
+
                     const pid = input.dataset.prodid;
-                    const td = document.getElementById('tilgaengelig_' + pid);
+
+                    // Finder td element
+                    const td =
+                        document.getElementById(
+                            'tilgaengelig_' + pid
+                        );
+
+                    // Maks tilgængeligt lager
                     const maxTilg = data[pid] ?? 0;
+
+                    // Opdaterer tabel
                     td.innerText = maxTilg;
 
-                    const antal = parseInt(input.value);
+                    // Nuvalgte antal
+                    const antal =
+                        parseInt(input.value);
+
+                    // Hvis bruger vælger for mange
                     if (antal > maxTilg) {
-                        alert(`Ikke nok af produktet "${input.dataset.produktnavn}": ønsket ${antal}, maks ${maxTilg}`);
+
+                        alert(
+                            `Ikke nok af produktet "${input.dataset.produktnavn}": ønsket ${antal}, maks ${maxTilg}`
+                        );
+
+                        // Sætter antal ned til max
                         input.value = maxTilg;
                     }
+
+                    // Sætter max attribute
                     input.max = maxTilg;
                 });
-            } catch (err) {
+            }
+            catch (err) {
+
                 console.error(err);
             }
         }
 
+        // Sætter afhentningsdato automatisk
         function updateAfhentning() {
-            const opsDato = new Date(opsInput.value);
+
+            const opsDato =
+                new Date(opsInput.value);
+
             if (!isNaN(opsDato)) {
-                const afhDato = new Date(opsDato);
-                afhDato.setDate(afhDato.getDate() + 2);
-                afhInput.value = afhDato.toISOString().split('T')[0];
+
+                const afhDato =
+                    new Date(opsDato);
+
+                // Tilføjer 2 dage
+                afhDato.setDate(
+                    afhDato.getDate() + 2
+                );
+
+                // Sætter dato i input
+                afhInput.value =
+                    afhDato.toISOString().split('T')[0];
+
+                // Opdaterer lagerstatus
                 updateTilgængelighed();
             }
         }
 
+        // Genererer noter automatisk
         function updateNotes() {
+
             let notes = [];
+
+            // Gennemgår alle quantity inputs
             antalInputs.forEach(input => {
-                const antal = parseInt(input.value);
-                if (antal > 0) notes.push(`${antal} x ${input.dataset.produktnavn}`);
+
+                const antal =
+                    parseInt(input.value);
+
+                // Kun produkter med antal > 0
+                if (antal > 0) {
+
+                    notes.push(
+                        `${antal} x ${input.dataset.produktnavn}`
+                    );
+                }
             });
-            noterInput.value = notes.join(', ');
+
+            // Samler noter
+            noterInput.value =
+                notes.join(', ');
         }
 
-        opsInput.addEventListener('change', updateAfhentning);
+        // Event listener på opsætningsdato
+        opsInput.addEventListener(
+            'change',
+            updateAfhentning
+        );
+
+        // Event listeners på antal inputs
         antalInputs.forEach(input => {
+
             input.addEventListener('input', () => {
+
                 updateNotes();
+
                 updateTilgængelighed();
             });
         });
 
+        // Kører funktioner ved load
         updateAfhentning();
+
         updateNotes();
+
     </script>
 }

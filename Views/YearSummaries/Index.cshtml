@@ -1,31 +1,68 @@
 ﻿@model IEnumerable<AdminPanel.Models.YearSummary>
 
 @{
+    // Titel som vises i browser/tab
     ViewData["Title"] = "Årsopgørelser";
 }
 
+<!-- Overskrift -->
 <h2>Årsopgørelser</h2>
 
+<!-- Tabel med årsopgørelser -->
 <table class="table table-striped">
+
+    <!-- Tabel overskrifter -->
     <thead>
         <tr>
+
             <th>År</th>
+
             <th>Omsætning</th>
+
             <th>Udgifter</th>
+
             <th>Antal Jobs</th>
+
             <th>Årsopgørelse</th>
+
         </tr>
     </thead>
+
+    <!-- Tabel data -->
     <tbody>
+
+        <!-- Gennemgår alle årsopgørelser -->
         @foreach (var item in Model)
         {
             <tr>
-                <td>@item.Year</td>
-                <td>@item.Revenue.ToString("C")</td>
-                <td>@item.Expenses.ToString("C")</td>
-                <td>@item.NumberOfJobs</td>
-                <td>@item.YearSummaries.ToString("C")</td>
+
+                <!-- År -->
+                <td>
+                    @item.Year
+                </td>
+
+                <!-- Omsætning -->
+                <td>
+                    @item.Revenue.ToString("C")
+                </td>
+
+                <!-- Udgifter -->
+                <td>
+                    @item.Expenses.ToString("C")
+                </td>
+
+                <!-- Antal jobs -->
+                <td>
+                    @item.NumberOfJobs
+                </td>
+
+                <!-- Årets resultat -->
+                <td>
+                    @item.YearSummaries.ToString("C")
+                </td>
+
             </tr>
         }
+
     </tbody>
 </table>

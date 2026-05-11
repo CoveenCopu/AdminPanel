@@ -1,0 +1,72 @@
+﻿@model AdminPanel.Models.Product
+
+@{
+    // Titel som vises i browser/tab
+    ViewData["Title"] = "Tilføj produkt";
+}
+
+<!-- Overskrift -->
+<h2>Tilføj produkt</h2>
+
+<!-- Formular til oprettelse af produkt -->
+<form asp-action="Create" method="post">
+
+    <!-- Produkt navn -->
+    <div class="form-group">
+
+        <!-- Label -->
+        <label asp-for="Name"></label>
+
+        <!-- Input -->
+        <input asp-for="Name"
+               class="form-control" />
+    </div>
+
+    <!-- Pris -->
+    <div class="form-group">
+
+        <!-- Label -->
+        <label asp-for="Price"></label>
+
+        <!-- Input -->
+        <input asp-for="Price"
+               class="form-control" />
+    </div>
+
+    <!-- Info -->
+    <div class="form-group">
+
+        <!-- Label -->
+        <label asp-for="Info"></label>
+
+        <!-- Input -->
+        <input asp-for="Info"
+               class="form-control" />
+    </div>
+
+    <!-- Lagerbeholdning -->
+    <div class="form-group">
+
+        <!-- Label -->
+        <label asp-for="Inventory"></label>
+
+        <!-- Input -->
+        <input asp-for="Inventory"
+               class="form-control" />
+    </div>
+
+    <!-- Gem knap -->
+    <button type="submit"
+            class="btn btn-primary">
+
+        Gem
+    </button>
+
+    <!-- Tilbage/annuller -->
+    <a asp-action="Index"
+       class="btn btn-secondary">
+
+        Annuller
+    </a>
+
+</form>

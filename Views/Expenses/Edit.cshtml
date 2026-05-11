@@ -1,35 +1,84 @@
 ﻿@model AdminPanel.Models.Expense
 
 @{
+    // Titel som vises i browser/tab
     ViewData["Title"] = "Ændre udgift";
 }
 
+<!-- Overskrift -->
 <h2>Ændre udgift</h2>
 
+<!-- Formular til redigering af udgift -->
 <form asp-action="Edit" method="post">
+
+    <!-- Skjult felt med ID -->
     <input type="hidden" asp-for="Id" />
 
+    <!-- Produkt -->
     <div class="form-group">
+
+        <!-- Label -->
         <label asp-for="Product"></label>
+
+        <!-- Input felt -->
         <input asp-for="Product" class="form-control" />
     </div>
+
+    <!-- Dato -->
     <div class="form-group">
+
+        <!-- Label -->
         <label asp-for="Date"></label>
-        <input asp-for="Date" type="date" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="Quantity"></label>
-        <input asp-for="Quantity" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="PricePerPiece"></label>
-        <input asp-for="PricePerPiece" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="Notes"></label>
-        <input asp-for="Notes" class="form-control" />
+
+        <!-- Date input -->
+        <input asp-for="Date"
+               type="date"
+               class="form-control" />
     </div>
 
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    <!-- Antal -->
+    <div class="form-group">
+
+        <!-- Label -->
+        <label asp-for="Quantity"></label>
+
+        <!-- Input felt -->
+        <input asp-for="Quantity"
+               class="form-control" />
+    </div>
+
+    <!-- Pris pr stk -->
+    <div class="form-group">
+
+        <!-- Label -->
+        <label asp-for="PricePerPiece"></label>
+
+        <!-- Input felt -->
+        <input asp-for="PricePerPiece"
+               class="form-control" />
+    </div>
+
+    <!-- Noter -->
+    <div class="form-group">
+
+        <!-- Label -->
+        <label asp-for="Notes"></label>
+
+        <!-- Input felt -->
+        <input asp-for="Notes"
+               class="form-control" />
+    </div>
+
+    <!-- Gem knap -->
+    <button type="submit"
+            class="btn btn-primary">
+        Save
+    </button>
+
+    <!-- Tilbage/annuller -->
+    <a asp-action="Index"
+       class="btn btn-secondary">
+        Cancel
+    </a>
+
 </form>

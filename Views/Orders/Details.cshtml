@@ -1,20 +1,71 @@
 ﻿@model AdminPanel.Models.Order
 
+<!-- Overskrift -->
 <h2>Ordredetaljer</h2>
 
+<!-- Ordre information -->
 <div>
-    <b>Kunde:</b> @Model.Customer <br />
-    <b>Adresse:</b> @Model.Address <br />
-    <b>Telefon:</b> @Model.Number <br />
-    <b>Opsætning:</b> @Model.SetupDate?.ToShortDateString() <br />
-    <b>Afhentning:</b> @(Model.PickupDate?.ToShortDateString() ?? "") <br />
-    <b>Transport:</b> @Model.Transport <br />
-    <b>Pris:</b> @Model.OrderItems.Sum(oi => (oi.Product?.Price ?? 0) * oi.Quantity).ToString("C") <br />
-    <b>Noter:</b> @Model.Notes
+
+    <!-- Kunde -->
+    <b>Kunde:</b>
+    @Model.Customer
+
+    <br />
+
+    <!-- Adresse -->
+    <b>Adresse:</b>
+    @Model.Address
+
+    <br />
+
+    <!-- Telefonnummer -->
+    <b>Telefon:</b>
+    @Model.Number
+
+    <br />
+
+    <!-- Opsætningsdato -->
+    <b>Opsætning:</b>
+    @Model.SetupDate?.ToShortDateString()
+
+    <br />
+
+    <!-- Afhentningsdato -->
+    <b>Afhentning:</b>
+
+    @(Model.PickupDate?.ToShortDateString() ?? "")
+
+    <br />
+
+    <!-- Transport -->
+    <b>Transport:</b>
+    @Model.Transport
+
+    <br />
+
+    <!-- Samlet pris -->
+    <b>Pris:</b>
+
+    @Model.OrderItems
+    .Sum(oi =>
+    (oi.Product?.Price ?? 0)
+    * oi.Quantity)
+    .ToString("C")
+
+    <br />
+
+    <!-- Noter -->
+    <b>Noter:</b>
+    @Model.Notes
+
 </div>
 
+<!-- Produktliste -->
 <h4>Produkter</h4>
+
 <table class="table table-bordered">
+
+    <!-- Tabel overskrifter -->
     <thead>
         <tr>
             <th>Produkt</th>
@@ -23,17 +74,47 @@
             <th>Total</th>
         </tr>
     </thead>
+
+    <!-- Tabel data -->
     <tbody>
+
+        <!-- Gennemgår alle produkter -->
         @foreach (var item in Model.OrderItems)
         {
             <tr>
-                <td>@item.Product.Name</td>
-                <td>@(item.Product?.Price ?? 0).ToString("C")</td>
-                <td>@item.Quantity</td>
-                <td>@((item.Product?.Price ?? 0) * item.Quantity).ToString("C")</td>
+
+                <!-- Produkt navn -->
+                <td>
+                    @item.Product.Name
+                </td>
+
+                <!-- Pris -->
+                <td>
+                    @(item.Product?.Price ?? 0)
+                    .ToString("C")
+                </td>
+
+                <!-- Antal -->
+                <td>
+                    @item.Quantity
+                </td>
+
+                <!-- Samlet pris -->
+                <td>
+                    @((item.Product?.Price ?? 0)
+                                    * item.Quantity)
+                .ToString("C")
+            </td>
+
             </tr>
-        }
+                }
+
     </tbody>
 </table>
 
-<a asp-action="Index" class="btn btn-secondary">Tilbage til Ordrer</a>
+<!-- Tilbage knap -->
+<a asp-action="Index"
+   class="btn btn-secondary">
+
+    Tilbage til Ordrer
+</a>

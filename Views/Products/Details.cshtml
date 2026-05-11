@@ -1,0 +1,41 @@
+﻿@model AdminPanel.Models.Product
+
+@{
+    // Titel som vises i browser/tab
+    ViewData["Title"] = "Produktinfo";
+}
+
+<!-- Overskrift -->
+<h2>Produktinfo</h2>
+
+<!-- Produkt information -->
+<div>
+
+    <!-- Produkt navn -->
+    <h4>
+        @Model.Name
+    </h4>
+
+    <!-- Pris -->
+    <div>
+        Pris: @Model.Price.ToString("C")
+    </div>
+
+    <!-- Produkt info -->
+    <div>
+        Info: @Model.Info
+    </div>
+
+    <!-- Lagerbeholdning -->
+    <div>
+        Beholdning: @Model.Inventory
+    </div>
+
+</div>
+
+<!-- Tilbage knap -->
+<a asp-action="Index"
+   class="btn btn-secondary">
+
+    Tilbage
+</a>

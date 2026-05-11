@@ -4,210 +4,287 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace AdminPanel.Controllers
 {
+    // Brugere og admins må bruge Orders controller
     [Authorize(Roles = "User,Admin")]
     public class OrdersController : Controller
     {
+        // Database context
         private readonly AppDbContext _context;
 
+        // Constructor som injicerer database context
         public OrdersController(AppDbContext context)
         {
             _context = context;
         }
 
-        // Henter og viser alle ordrer inkl. order items og produkter
+        // Henter og viser alle ordrer
+        // Inkluderer OrderItems og Products
         public IActionResult Index()
         {
             var orders = _context.Orders
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
                 .ToList();
+
             return View(orders);
         }
 
-        // Viser formular til oprettelse af ordre og sender produktliste til view
+        // Viser formular til oprettelse af ordre
+        // Sender produktliste til view
         public IActionResult Create()
         {
             ViewBag.Produkter = _context.Products.ToList();
             return View();
         }
 
-        // Opretter en ny ordre:
-        // - Validerer datoer
-        // - Tjekker lager i perioden
-        // - Opretter OrderItems med fastlåst pris
-        // - Genererer noter automatisk
+        // Opretter ny ordre
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Order order, int[] productId, int[] antal)
+        public IActionResult Create(Order order, int[] productId, int[] quantity)
         {
+            // Tjekker om setup dato mangler
             if (order.SetupDate == null)
                 ModelState.AddModelError("Opsætningsdato", "Startdato kræves");
+
+            // Tjekker om pickup dato mangler
             if (order.PickupDate == null)
                 ModelState.AddModelError("Afhetningsdato", "Slutdato kræves");
 
+            // Hvis model ikke er valid
             if (!ModelState.IsValid)
             {
                 ViewBag.Produkter = _context.Products.ToList();
                 return View(order);
             }
 
-            // Beregn tilgængelighed i perioden
-            var tilgængelighed = _context.Products.ToDictionary(p => p.Id, p => p.Inventory);
-            var ordersIPeriode = _context.Orders
+            // Opretter dictionary med lagerbeholdning
+            var Availability =
+                _context.Products.ToDictionary(p => p.Id, p => p.Inventory);
+
+            // Finder alle ordrer i samme periode
+            var ordersInPeriod = _context.Orders
                 .Include(o => o.OrderItems)
-                .Where(o => o.SetupDate <= order.PickupDate && o.PickupDate >= order.SetupDate)
+                .Where(o =>
+                    o.SetupDate <= order.PickupDate &&
+                    o.PickupDate >= order.SetupDate)
                 .ToList();
 
-            foreach (var o in ordersIPeriode)
+            // Trækker allerede bookede produkter fra lager
+            foreach (var o in ordersInPeriod)
                 foreach (var oi in o.OrderItems)
-                    tilgængelighed[oi.ProductId] -= oi.Quantity;
+                    Availability[oi.ProductId] -= oi.Quantity;
 
-            // Tjek antal
+            // Fejl flag
             bool fejl = false;
 
+            // Tjekker om ønsket antal overstiger lager
             for (int i = 0; i < productId.Length; i++)
             {
-                var ant = (i < antal.Length && antal[i] > 0) ? antal[i] : 0;
+                var ant =
+                    (i < quantity.Length && quantity[i] > 0)
+                    ? quantity[i]
+                    : 0;
 
-                if (ant > tilgængelighed[productId[i]])
+                if (ant > Availability[productId[i]])
                 {
-                    ModelState.AddModelError("", $"Ikke nok af produktet: {ant} ønsket, maks {tilgængelighed[productId[i]]}");
+                    ModelState.AddModelError(
+                        "",
+                        $"Ikke nok af produktet: {ant} ønsket, maks {Availability[productId[i]]}");
+
                     fejl = true;
                 }
             }
 
+            // Returnerer view igen hvis fejl
             if (fejl)
             {
                 ViewBag.Produkter = _context.Products.ToList();
                 return View(order);
             }
 
-            // Tilføj OrderItems (pris fastlåses ved oprettelse)
-            var prices = _context.Products.ToDictionary(p => p.Id, p => p.Price);
+            // Henter produktpriser
+            var prices =
+                _context.Products.ToDictionary(p => p.Id, p => p.Price);
+
+            // Opretter liste med OrderItems
             order.OrderItems = new List<OrderItem>();
 
+            // Tilføjer OrderItems til ordren
             for (int i = 0; i < productId.Length; i++)
             {
-                var ant = (i < antal.Length && antal[i] > 0) ? antal[i] : 0;
+                var ant =
+                    (i < quantity.Length && quantity[i] > 0)
+                    ? quantity[i]
+                    : 0;
 
+                // Kun produkter med antal > 0 tilføjes
                 if (ant > 0)
                 {
                     order.OrderItems.Add(new OrderItem
                     {
                         ProductId = productId[i],
+
+                        // Fastlåser antal
                         Quantity = ant,
+
+                        // Fastlåser pris
                         Price = prices[productId[i]]
                     });
                 }
             }
 
-            // Generer noter automatisk (fx "2 x Stol, 1 x Bord")
-            order.Notes = string.Join(", ", order.OrderItems.Select(oi =>
-                $"{oi.Quantity} x {oi.Product?.Name ?? _context.Products.First(p => p.Id == oi.ProductId).Name}"));
+            // Genererer noter automatisk
+            // Fx "2 x Stol, 1 x Bord"
+            order.Notes = string.Join(
+                ", ",
+                order.OrderItems.Select(oi =>
+                    $"{oi.Quantity} x {oi.Product?.Name ?? _context.Products.First(p => p.Id == oi.ProductId).Name}"));
 
+            // Gemmer ordre i database
             _context.Orders.Add(order);
+
+            // Gemmer ændringer i SQL database
             _context.SaveChanges();
+
+            // Sender bruger tilbage til Index siden
             return RedirectToAction(nameof(Index));
         }
 
-        // Henter en ordre og viser den til redigering
+        // Henter ordre til redigering
         public IActionResult Edit(int id)
         {
+            // Finder ordre inkl produkter
             var order = _context.Orders
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
                 .FirstOrDefault(o => o.Id == id);
 
-            if (order == null) return NotFound();
+            // Hvis ordre ikke findes
+            if (order == null)
+                return NotFound();
+
+            // Sender produktliste til view
             ViewBag.Produkter = _context.Products.ToList();
+
+            // Sender ordre til view
             return View(order);
         }
 
-        // Opdaterer en ordre:
-        // - Opdaterer kundeinfo og datoer
-        // - Tjekker lager uden at tælle denne ordre med
-        // - Genskaber OrderItems med fastlåst pris
-        // - Opdaterer noter
+        // Opdaterer eksisterende ordre
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Order order, int[] productId, int[] quantity)
+        public IActionResult Edit(
+            int id,
+            Order order,
+            int[] productId,
+            int[] quantity)
         {
+            // Finder eksisterende ordre i database
             var dbOrder = _context.Orders
                 .Include(o => o.OrderItems)
                 .FirstOrDefault(o => o.Id == id);
 
-            if (dbOrder == null) return NotFound();
+            // Hvis ordre ikke findes
+            if (dbOrder == null)
+                return NotFound();
 
-            // Opdater basisinfo
+            // Opdaterer kundeinformation
             dbOrder.Customer = order.Customer;
             dbOrder.City = order.City;
             dbOrder.Address = order.Address;
             dbOrder.Number = order.Number;
             dbOrder.SetupDate = order.SetupDate;
             dbOrder.PickupDate = order.PickupDate;
-            dbOrder.Transport = order.Transport ?? dbOrder.Transport;
 
-            // Beregn tilgængelighed minus denne ordre
-            var tilgængelighed = _context.Products.ToDictionary(p => p.Id, p => p.Inventory);
+            // Opdaterer transport
+            dbOrder.Transport =
+                order.Transport ?? dbOrder.Transport;
+
+            // Opretter dictionary med lagerbeholdning
+            var Availability =
+                _context.Products.ToDictionary(p => p.Id, p => p.Inventory);
+
+            // Finder ordrer i samme periode
+            // Ekskluderer denne ordre
             var ordersIPeriode = _context.Orders
                 .Include(o => o.OrderItems)
-                .Where(o => o.Id != id && o.SetupDate <= dbOrder.PickupDate && o.PickupDate >= dbOrder.SetupDate)
+                .Where(o =>
+                    o.Id != id &&
+                    o.SetupDate <= dbOrder.PickupDate &&
+                    o.PickupDate >= dbOrder.SetupDate)
                 .ToList();
 
+            // Trækker bookede produkter fra lager
             foreach (var o in ordersIPeriode)
                 foreach (var oi in o.OrderItems)
-                    tilgængelighed[oi.ProductId] -= oi.Quantity;
+                    Availability[oi.ProductId] -= oi.Quantity;
 
-            // Tjek antal
+            // Fejl flag
             bool fejl = false;
 
+            // Tjekker lagerbeholdning
             for (int i = 0; i < productId.Length; i++)
             {
-                var ant = (i < quantity.Length && quantity[i] > 0) ? quantity[i] : 0;
+                var ant =
+                    (i < quantity.Length && quantity[i] > 0)
+                    ? quantity[i]
+                    : 0;
 
-                if (ant > tilgængelighed[productId[i]])
+                if (ant > Availability[productId[i]])
                 {
-                    ModelState.AddModelError("", $"Ikke nok af produktet: {ant} ønsket, maks {tilgængelighed[productId[i]]}");
+                    ModelState.AddModelError(
+                        "",
+                        $"Ikke nok af produktet: {ant} ønsket, maks {Availability[productId[i]]}");
+
                     fejl = true;
                 }
             }
 
+            // Returnerer view igen hvis fejl
             if (fejl)
             {
                 ViewBag.Produkter = _context.Products.ToList();
                 return View(dbOrder);
             }
 
-            // Opdater OrderItems (pris fastlåses igen ved redigering)
-            var prices = _context.Products.ToDictionary(p => p.Id, p => p.Price);
+            // Henter produktpriser
+            var prices =
+                _context.Products.ToDictionary(p => p.Id, p => p.Price);
 
-            // Gem gamle items (inkl. deres pris)
-            var eksisterendeItems = dbOrder.OrderItems.ToDictionary(oi => oi.ProductId);
+            // Gemmer gamle OrderItems
+            var existingItems =
+                dbOrder.OrderItems.ToDictionary(oi => oi.ProductId);
 
+            // Fjerner gamle items
             dbOrder.OrderItems.Clear();
 
+            // Opretter nye OrderItems
             for (int i = 0; i < productId.Length; i++)
             {
-                var ant = (i < quantity.Length && quantity[i] > 0) ? quantity[i] : 0;
+                var ant =
+                    (i < quantity.Length && quantity[i] > 0)
+                    ? quantity[i]
+                    : 0;
 
                 if (ant > 0)
                 {
                     decimal price;
 
-                    if (eksisterendeItems.ContainsKey(productId[i]))
+                    // Hvis produkt fandtes før
+                    if (existingItems.ContainsKey(productId[i]))
                     {
-                        // Brug gammel pris
-                        price = eksisterendeItems[productId[i]].Price;
+                        // Behold gammel pris
+                        price = existingItems[productId[i]].Price;
                     }
                     else
                     {
-                        // Nyt produkt → brug ny pris
+                        // Nyt produkt får ny pris
                         price = prices[productId[i]];
                     }
 
+                    // Tilføjer item til ordren
                     dbOrder.OrderItems.Add(new OrderItem
                     {
                         ProductId = productId[i],
@@ -217,61 +294,83 @@ namespace AdminPanel.Controllers
                 }
             }
 
-            // Opdater noter
-            dbOrder.Notes = string.Join(", ", dbOrder.OrderItems.Select(oi =>
-                $"{oi.Quantity} x {oi.Product?.Name ?? _context.Products.First(p => p.Id == oi.ProductId).Name}"));
+            // Opdaterer noter automatisk
+            dbOrder.Notes = string.Join(
+                ", ",
+                dbOrder.OrderItems.Select(oi =>
+                    $"{oi.Quantity} x {oi.Product?.Name ?? _context.Products.First(p => p.Id == oi.ProductId).Name}"));
 
+            // Gemmer ændringer
             _context.SaveChanges();
+
+            // Sender bruger tilbage til Index
             return RedirectToAction(nameof(Index));
         }
 
         // Viser bekræftelse før sletning
         public IActionResult Delete(int id)
         {
+            // Finder ordre inkl produkter
             var order = _context.Orders
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
                 .FirstOrDefault(o => o.Id == id);
 
-            if (order == null) return NotFound();
+            // Hvis ordre ikke findes
+            if (order == null)
+                return NotFound();
+
+            // Sender ordre til view
             return View(order);
         }
 
-        // Sletter en ordre
+        // Sletter ordre
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
+            // Finder ordre inkl items
             var order = _context.Orders
                 .Include(o => o.OrderItems)
                 .FirstOrDefault(o => o.Id == id);
 
-            if (order == null) return NotFound();
+            // Hvis ordre ikke findes
+            if (order == null)
+                return NotFound();
 
+            // Fjerner ordre fra database
             _context.Orders.Remove(order);
+
+            // Gemmer ændringer
             _context.SaveChanges();
+
+            // Sender bruger tilbage til Index
             return RedirectToAction(nameof(Index));
         }
 
-        // Returnerer lager-tilgængelighed i en periode (bruges via AJAX)
+        // Returnerer lager-tilgængelighed via AJAX
         [HttpGet]
         public IActionResult Availability(DateTime start, DateTime end)
         {
-            var tilgængelighed = _context.Products.ToDictionary(p => p.Id, p => p.Inventory);
+            // Opretter dictionary med lagerbeholdning
+            var Availability =
+                _context.Products.ToDictionary(p => p.Id, p => p.Inventory);
 
+            // Finder ordrer i perioden
             var ordersIPeriode = _context.Orders
                 .Include(o => o.OrderItems)
-                .Where(o => o.SetupDate <= end && o.PickupDate >= start)
+                .Where(o =>
+                    o.SetupDate <= end &&
+                    o.PickupDate >= start)
                 .ToList();
 
+            // Trækker bookede produkter fra lager
             foreach (var o in ordersIPeriode)
                 foreach (var oi in o.OrderItems)
-                    tilgængelighed[oi.ProductId] -= oi.Quantity;
+                    Availability[oi.ProductId] -= oi.Quantity;
 
-            return Json(tilgængelighed);
+            // Returnerer data som JSON
+            return Json(Availability);
         }
     }
 }
-
-
-

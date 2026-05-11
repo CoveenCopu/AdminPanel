@@ -1,48 +1,130 @@
 ﻿@model IEnumerable<AdminPanel.Models.Order>
 
 @{
+    // Titel som vises i browser/tab
     ViewData["Title"] = "Ordrer";
 }
 
+<!-- Overskrift -->
 <h2>Ordrer</h2>
 
+<!-- Knap til oprettelse af ordre -->
 <p>
-    <a asp-action="Create" class="btn btn-primary">Tilføj ordre</a>
+
+    <a asp-action="Create"
+       class="btn btn-primary">
+
+        Tilføj ordre
+    </a>
+
 </p>
 
+<!-- Tabel med ordrer -->
 <table class="table table-striped">
+
+    <!-- Tabel overskrifter -->
     <thead>
         <tr>
+
             <th>Kunde</th>
+
             <th>By</th>
+
             <th>Adresse</th>
+
             <th>Telefon</th>
+
             <th>Opsætning</th>
+
             <th>Afhentning</th>
+
             <th>Pris</th>
+
             <th>Transport</th>
+
             <th>Noter</th>
+
             <th>Handlinger</th>
+
         </tr>
     </thead>
+
+    <!-- Tabel data -->
     <tbody>
+
+        <!-- Gennemgår alle ordrer -->
         @foreach (var item in Model)
         {
             <tr>
-                <td>@item.Customer</td>
-                <td>@item.City</td>
-                <td>@item.Address</td>
-                <td>@item.Number</td>
-                <td>@item.SetupDate?.ToShortDateString()</td>
-                <td>@item.PickupDate?.ToShortDateString()</td>
-                <td>@item.Price.ToString("C")</td>
-				<td>@item.Transport</td>
-                <td>@item.Notes</td>
+
+                <!-- Kunde -->
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-secondary">Rediger</a>
-                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Slet</a>
+                    @item.Customer
                 </td>
+
+                <!-- By -->
+                <td>
+                    @item.City
+                </td>
+
+                <!-- Adresse -->
+                <td>
+                    @item.Address
+                </td>
+
+                <!-- Telefonnummer -->
+                <td>
+                    @item.Number
+                </td>
+
+                <!-- Opsætningsdato -->
+                <td>
+                    @item.SetupDate?.ToShortDateString()
+                </td>
+
+                <!-- Afhentningsdato -->
+                <td>
+                    @item.PickupDate?.ToShortDateString()
+                </td>
+
+                <!-- Samlet pris -->
+                <td>
+                    @item.Price.ToString("C")
+                </td>
+
+                <!-- Transport -->
+                <td>
+                    @item.Transport
+                </td>
+
+                <!-- Noter -->
+                <td>
+                    @item.Notes
+                </td>
+
+                <!-- Handlinger -->
+                <td>
+
+                    <!-- Rediger knap -->
+                    <a asp-action="Edit"
+                       asp-route-id="@item.Id"
+                       class="btn btn-sm btn-secondary">
+
+                        Rediger
+                    </a>
+
+                    <!-- Slet knap -->
+                    <a asp-action="Delete"
+                       asp-route-id="@item.Id"
+                       class="btn btn-sm btn-danger">
+
+                        Slet
+                    </a>
+
+                </td>
+
             </tr>
         }
+
     </tbody>
 </table>

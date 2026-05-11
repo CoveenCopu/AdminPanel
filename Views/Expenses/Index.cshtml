@@ -1,16 +1,26 @@
 ﻿@model IEnumerable<AdminPanel.Models.Expense>
 
 @{
+    // Titel som vises i browser/tab
     ViewData["Title"] = "Udgifter";
 }
 
+<!-- Overskrift -->
 <h2>Udgifter</h2>
 
+<!-- Knap til oprettelse af ny udgift -->
 <p>
-    <a asp-action="Create" class="btn btn-primary">Tilføj ny udgift</a>
+    <a asp-action="Create"
+       class="btn btn-primary">
+
+        Tilføj ny udgift
+    </a>
 </p>
 
+<!-- Tabel med alle udgifter -->
 <table class="table table-striped">
+
+    <!-- Tabel overskrifter -->
     <thead>
         <tr>
             <th>Produkt</th>
@@ -22,21 +32,55 @@
             <th>Handlinger</th>
         </tr>
     </thead>
+
+    <!-- Tabel data -->
     <tbody>
+
+        <!-- Gennemgår alle udgifter -->
         @foreach (var item in Model)
         {
             <tr>
+
+                <!-- Produkt navn -->
                 <td>@item.Product</td>
+
+                <!-- Dato -->
                 <td>@item.Date.ToShortDateString()</td>
+
+                <!-- Antal -->
                 <td>@item.Quantity</td>
+
+                <!-- Pris pr stk -->
                 <td>@item.PricePerPiece.ToString("C")</td>
+
+                <!-- Samlet pris -->
                 <td>@item.TotalPrice.ToString("C")</td>
+
+                <!-- Noter -->
                 <td>@item.Notes</td>
+
+                <!-- Knapper -->
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-secondary">Delete</a>
+
+                    <!-- Rediger knap -->
+                    <a asp-action="Edit"
+                       asp-route-id="@item.Id"
+                       class="btn btn-sm btn-primary">
+
+                        Edit
+                    </a>
+
+                    <!-- Slet knap -->
+                    <a asp-action="Delete"
+                       asp-route-id="@item.Id"
+                       class="btn btn-sm btn-secondary">
+
+                        Delete
+                    </a>
+
                 </td>
             </tr>
         }
+
     </tbody>
 </table>

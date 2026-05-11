@@ -1,0 +1,103 @@
+﻿@model IEnumerable<AdminPanel.Models.Product>
+
+@{
+    // Titel som vises i browser/tab
+    ViewData["Title"] = "Produktkatalog";
+}
+
+<!-- Overskrift -->
+<h2>Produktkatalog</h2>
+
+<!-- Knap til oprettelse af produkt -->
+<p>
+
+    <a asp-action="Create"
+       class="btn btn-primary">
+
+        Tilføj produkt
+    </a>
+
+</p>
+
+<!-- Produkt tabel -->
+<table class="table">
+
+    <!-- Tabel overskrifter -->
+    <thead>
+        <tr>
+
+            <th>Navn</th>
+
+            <th>Pris</th>
+
+            <th>Info</th>
+
+            <th>Varebeholdning</th>
+
+            <th>Handlinger</th>
+
+        </tr>
+    </thead>
+
+    <!-- Tabel data -->
+    <tbody>
+
+        <!-- Gennemgår alle produkter -->
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <!-- Produkt navn -->
+                <td>
+                    @item.Name
+                </td>
+
+                <!-- Pris -->
+                <td>
+                    @item.Price.ToString("C")
+                </td>
+
+                <!-- Info -->
+                <td>
+                    @item.Info
+                </td>
+
+                <!-- Lagerbeholdning -->
+                <td>
+                    @item.Inventory
+                </td>
+
+                <!-- Handlinger -->
+                <td>
+
+                    <!-- Info knap -->
+                    <a asp-action="Details"
+                       asp-route-id="@item.Id"
+                       class="btn btn-sm btn-info">
+
+                        Info
+                    </a>
+
+                    <!-- Rediger knap -->
+                    <a asp-action="Edit"
+                       asp-route-id="@item.Id"
+                       class="btn btn-sm btn-primary">
+
+                        Rediger
+                    </a>
+
+                    <!-- Slet knap -->
+                    <a asp-action="Delete"
+                       asp-route-id="@item.Id"
+                       class="btn btn-sm btn-secondary">
+
+                        Slet
+                    </a>
+
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+</table>
