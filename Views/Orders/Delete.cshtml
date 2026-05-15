@@ -26,11 +26,12 @@
     <!-- Samlet pris -->
     <b>Pris:</b>
 
-    @Model.OrderItems
-    .Sum(oi =>
-    (oi.Product?.Price ?? 0)
-    * oi.Quantity)
-    .ToString("C")
+    @((
+        Model.OrderItems.Sum(oi =>
+        (oi.Product?.Price ?? 0) * oi.Quantity
+        )
+        + (Model.Transport ?? 0)
+        ).ToString("C"))
 
     <br />
 

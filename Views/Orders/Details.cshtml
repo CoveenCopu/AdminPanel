@@ -47,10 +47,10 @@
     <b>Pris:</b>
 
     @Model.OrderItems
-    .Sum(oi =>
-    (oi.Product?.Price ?? 0)
-    * oi.Quantity)
-    .ToString("C")
+        .Sum(oi =>
+            (oi.Product?.Price ?? 0)
+            * oi.Quantity)
+        .ToString("C")
 
     <br />
 
@@ -102,12 +102,12 @@
                 <!-- Samlet pris -->
                 <td>
                     @((item.Product?.Price ?? 0)
-                                    * item.Quantity)
-                .ToString("C")
-            </td>
+                        * item.Quantity)
+                    .ToString("C")
+                </td>
 
             </tr>
-                }
+        }
 
     </tbody>
 </table>

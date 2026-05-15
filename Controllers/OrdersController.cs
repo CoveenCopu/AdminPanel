@@ -136,7 +136,6 @@ namespace AdminPanel.Controllers
             }
 
             // Genererer noter automatisk
-            // Fx "2 x Stol, 1 x Bord"
             order.Notes = string.Join(
                 ", ",
                 order.OrderItems.Select(oi =>
@@ -250,12 +249,10 @@ namespace AdminPanel.Controllers
             }
 
             // Henter produktpriser
-            var prices =
-                _context.Products.ToDictionary(p => p.Id, p => p.Price);
+            var prices = _context.Products.ToDictionary(p => p.Id, p => p.Price);
 
             // Gemmer gamle OrderItems
-            var existingItems =
-                dbOrder.OrderItems.ToDictionary(oi => oi.ProductId);
+            var existingItems = dbOrder.OrderItems.ToDictionary(oi => oi.ProductId);
 
             // Fjerner gamle items
             dbOrder.OrderItems.Clear();
