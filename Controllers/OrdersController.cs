@@ -187,11 +187,7 @@ namespace AdminPanel.Controllers
         // Opdaterer eksisterende ordre
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(
-            int id,
-            Order order,
-            int[] productId,
-            int[] quantity)
+        public IActionResult Edit( int id, Order order, Product[] products, int[] quantity)
         {
             // Finder eksisterende ordre i database
             var dbOrder = _context.Orders
@@ -225,18 +221,18 @@ namespace AdminPanel.Controllers
             bool hasError = false;
 
             // Tjekker lagerbeholdning
-            for (int i = 0; i < productId.Length; i++)
+            for (int i = 0; i < products.Length; i++)
             {
                 var ant =
                     (i < quantity.Length && quantity[i] > 0)
                     ? quantity[i]
                     : 0;
 
-                if (ant > availability[productId[i]])
+                if (ant > availability[products[i].Id])
                 {
                     ModelState.AddModelError(
                         "",
-                        $"Ikke nok af produktet: {ant} ønsket, maks {availability[productId[i]]}");
+                        $"Ikke nok af produktet: {products[i].Name}, maks {availability[products[i].Id]}");
 
                     hasError = true;
                 }
@@ -259,7 +255,7 @@ namespace AdminPanel.Controllers
             dbOrder.OrderItems.Clear();
 
             // Opretter nye OrderItems
-            for (int i = 0; i < productId.Length; i++)
+            for (int i = 0; i < products.Length; i++)
             {
                 var ant =
                     (i < quantity.Length && quantity[i] > 0)
@@ -271,21 +267,21 @@ namespace AdminPanel.Controllers
                     decimal price;
 
                     // Hvis produkt fandtes før
-                    if (existingItems.ContainsKey(productId[i]))
+                    if (existingItems.ContainsKey(products[i].Id))
                     {
                         // Behold gammel pris
-                        price = existingItems[productId[i]].Price;
+                        price = existingItems[products[i].Id].Price;
                     }
                     else
                     {
                         // Nyt produkt får ny pris
-                        price = prices[productId[i]];
+                        price = prices[products[i].Id];
                     }
 
                     // Tilføjer item til ordren
                     dbOrder.OrderItems.Add(new OrderItem
                     {
-                        ProductId = productId[i],
+                        ProductId = products[i].Id,
                         Quantity = ant,
                         Price = price
                     });
