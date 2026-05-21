@@ -1,54 +1,43 @@
-﻿@{
+﻿@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
     // Fjerner shared layout på login siden
     Layout = null;
 }
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>Login</title>
-
     <!-- Firebase login script -->
     <script type="module">
-
         // Importerer Firebase App
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-
         // Importerer Firebase Authentication
         import {
             getAuth,
             signInWithEmailAndPassword
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-        // Firebase projekt konfiguration
+        // Firebase projekt konfiguration hentet fra appsettings.json
         const firebaseConfig = {
-          apiKey: "AIzaSyBMB5DYI6XtVPrw-GSHD0h6j3qjdNQMq4E",
-          authDomain: "ms-admin---final.firebaseapp.com",
-          projectId: "ms-admin---final",
-          storageBucket: "ms-admin---final.firebasestorage.app",
-          messagingSenderId: "371213449710",
-          appId: "1:371213449710:web:756fd8d276f41b05b236ff"
+            apiKey: "@Configuration["Firebase:ApiKey"]",
+            authDomain: "@Configuration["Firebase:AuthDomain"]",
+            projectId: "@Configuration["Firebase:ProjectId"]",
+            storageBucket: "@Configuration["Firebase:StorageBucket"]",
+            messagingSenderId: "@Configuration["Firebase:MessagingSenderId"]",
+            appId: "@Configuration["Firebase:AppId"]"
         };
-
         // Initialiserer Firebase app
         const app = initializeApp(firebaseConfig);
-
         // Henter Firebase auth service
         const auth = getAuth(app);
-
         // Global login funktion
         window.login = async function () {
-
             // Henter email fra input felt
             const email =
                 document.getElementById("email").value;
-
             // Henter password fra input felt
             const password =
                 document.getElementById("password").value;
-
             try {
-
                 // Logger bruger ind med Firebase
                 const userCredential =
                     await signInWithEmailAndPassword(
@@ -56,77 +45,56 @@
                         email,
                         password
                     );
-
                 // Henter bruger objekt
                 const user = userCredential.user;
-
                 // Henter Firebase ID token
                 const idToken = await user.getIdToken();
-
                 // Sender token til ASP.NET backend
                 const response = await fetch("/Account/Login", {
                     method: "POST",
-
                     headers: {
                         "Content-Type": "application/json"
                     },
-
                     body: JSON.stringify({
                         idToken: idToken
                     })
                 });
-
                 // Hvis login lykkes
                 if (response.ok) {
-
                     // Sender bruger til forsiden
                     window.location.href = "/";
                 }
                 else {
-
                     // Fejl hvis backend login fejler
                     alert("Login failed");
                 }
             }
-
             // Hvis Firebase login fejler
             catch (error) {
-
                 console.error(error);
-
                 alert("Forkert email eller password");
             }
         };
     </script>
 </head>
-
 <body>
-
     <!-- Login overskrift -->
     <h1>Login</h1>
-
     <!-- Email input -->
     <div>
         <label>Email</label><br />
-
         <input id="email" type="email" />
     </div>
-
     <br />
-
     <!-- Password input -->
     <div>
         <label>Password</label><br />
-
         <input id="password" type="password" />
     </div>
-
     <br />
-
     <!-- Login knap -->
     <button onclick="login()">
         Login
     </button>
-
 </body>
 </html>

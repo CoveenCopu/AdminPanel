@@ -3,7 +3,6 @@ using AdminPanel.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace AdminPanel.Controllers
 {
@@ -143,6 +142,10 @@ namespace AdminPanel.Controllers
         {
             // Finder produkt i database
             var product = await _context.Products.FindAsync(id);
+
+            // Hvis produkt ikke findes
+            if (product == null)
+                return NotFound();
 
             // Fjerner produkt fra database
             _context.Products.Remove(product);

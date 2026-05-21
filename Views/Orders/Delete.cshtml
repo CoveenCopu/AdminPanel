@@ -1,64 +1,40 @@
 ﻿@model AdminPanel.Models.Order
-
 <!-- Overskrift -->
 <h2>Slet ordre</h2>
-
 <!-- Bekræftelse -->
 <h4>
     Er du sikker på, du vil slette denne ordre?
 </h4>
-
 <!-- Viser ordre information -->
 <div>
-
     <!-- Kunde -->
     <b>Kunde:</b>
     @Model.Customer
-
     <br />
-
     <!-- Adresse -->
     <b>Adresse:</b>
     @Model.Address
-
     <br />
-
     <!-- Samlet pris -->
     <b>Pris:</b>
-
-    @((
-        Model.OrderItems.Sum(oi =>
-        (oi.Product?.Price ?? 0) * oi.Quantity
-        )
-        + (Model.Transport ?? 0)
-        ).ToString("C"))
-
+    @((Model.Price + (Model.Transport ?? 0)).ToString("C"))
     <br />
-
     <!-- Noter -->
     <b>Noter:</b>
     @Model.Notes
-
 </div>
-
 <!-- Formular som sletter ordren -->
 <form asp-action="Delete" method="post">
-
     <!-- Skjult ID -->
     <input type="hidden" asp-for="Id" />
-
     <!-- Slet knap -->
     <button type="submit"
             class="btn btn-danger">
-
         Slet
     </button>
-
     <!-- Tilbage/annuller -->
     <a asp-action="Index"
        class="btn btn-secondary">
-
         Cancel
     </a>
-
 </form>

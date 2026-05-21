@@ -5,7 +5,7 @@
     ViewData["Title"] = "Rediger ordre";
 
     // Henter produkter fra ViewBag
-    var produkter =
+    var products =
         ViewBag.Produkter as List<AdminPanel.Models.Product>
         ?? new List<AdminPanel.Models.Product>();
 
@@ -26,47 +26,43 @@
     <!-- Skjult ID -->
     <input type="hidden" asp-for="Id" />
 
+    <!-- Fejlbeskeder -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Der opstod en fejl:</strong>
+            <div asp-validation-summary="All"></div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <!-- Kunde -->
     <div class="form-group mb-2">
-
         <label asp-for="Customer"></label>
-
-        <input asp-for="Customer"
-               class="form-control" />
+        <input asp-for="Customer" class="form-control" />
     </div>
 
     <!-- By -->
     <div class="form-group mb-2">
-
         <label asp-for="City"></label>
-
-        <input asp-for="City"
-               class="form-control" />
+        <input asp-for="City" class="form-control" />
     </div>
 
     <!-- Adresse -->
     <div class="form-group mb-2">
-
         <label asp-for="Address"></label>
-
-        <input asp-for="Address"
-               class="form-control" />
+        <input asp-for="Address" class="form-control" />
     </div>
 
     <!-- Telefonnummer -->
     <div class="form-group mb-2">
-
         <label asp-for="Number"></label>
-
-        <input asp-for="Number"
-               class="form-control" />
+        <input asp-for="Number" class="form-control" />
     </div>
 
     <!-- Opsætningsdato -->
     <div class="form-group mb-2">
-
         <label asp-for="SetupDate"></label>
-
         <input asp-for="SetupDate"
                type="date"
                class="form-control"
@@ -76,9 +72,7 @@
 
     <!-- Afhentningsdato -->
     <div class="form-group mb-2">
-
         <label asp-for="PickupDate"></label>
-
         <input asp-for="PickupDate"
                type="date"
                class="form-control"
@@ -88,9 +82,7 @@
 
     <!-- Transport -->
     <div class="form-group mb-2">
-
         <label asp-for="Transport"></label>
-
         <input asp-for="Transport"
                type="number"
                step="0.01"
@@ -101,52 +93,37 @@
     <h4>Produkter</h4>
 
     <table class="table table-bordered">
-
         <!-- Tabel overskrifter -->
         <thead>
             <tr>
                 <th>Produkt</th>
                 <th>Pris</th>
-                <th>Tilgængelig</th>
                 <th>Antal</th>
             </tr>
         </thead>
-
         <!-- Tabel data -->
         <tbody>
-
             <!-- Gennemgår alle produkter -->
-            @for (int i = 0; i < produkter.Count; i++)
+            @for (int i = 0; i < products.Count; i++)
             {
                 // Produkt ID
-                int pid = produkter[i].Id;
+                int pid = products[i].Id;
 
                 // Finder eksisterende antal
-                int antal =
+                int quantity =
                 eksisterende.ContainsKey(pid)
                 ? eksisterende[pid]
                 : 0;
 
                 <tr>
-
                     <!-- Produkt navn -->
-                    <td>
-                        @produkter[i].Name
-                    </td>
+                    <td>@products[i].Name</td>
 
                     <!-- Produkt pris -->
-                    <td>
-                        @produkter[i].Price.ToString("C")
-                    </td>
-
-                    <!-- Tilgængeligt lager -->
-                    <td id="tilgaengelig_@pid">
-                        @produkter[i].Inventory
-                    </td>
+                    <td>@products[i].Price.ToString("C")</td>
 
                     <!-- Antal input -->
                     <td>
-
                         <!-- Skjult productId -->
                         <input type="hidden"
                                name="productId"
@@ -156,53 +133,24 @@
                         <input type="number"
                                name="quantity"
                                min="0"
-                               value="@antal"
+                               value="@quantity"
                                class="form-control antal-input"
                                data-prodid="@pid"
-                               data-produktnavn="@produkter[i].Name" />
+                               data-produktnavn="@products[i].Name" />
                     </td>
-
                 </tr>
             }
-
         </tbody>
     </table>
 
-    <!-- Noter -->
-    <div class="form-group mb-2">
-
-        <label asp-for="Notes"></label>
-
-        <!-- Readonly fordi noter genereres automatisk -->
-        <input asp-for="Notes"
-               id="noter"
-               class="form-control"
-               readonly
-               value="@Model.Notes" />
-    </div>
-
     <!-- Gem knap -->
-    <button type="submit"
-            class="btn btn-primary">
-
+    <button type="submit" class="btn btn-primary">
         Gem ændringer
     </button>
 
     <!-- Tilbage/annuller -->
-    <a asp-action="Index"
-       class="btn btn-secondary">
-
+    <a asp-action="Index" class="btn btn-secondary">
         Cancel
     </a>
 
 </form>
-
-@section Scripts {
-
-    <partial name="_ValidationScriptsPartial" />
-
-    <script>
-
-
-    </script>
-}

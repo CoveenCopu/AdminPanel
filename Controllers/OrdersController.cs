@@ -19,6 +19,31 @@ namespace AdminPanel.Controllers
             _context = context;
         }
 
+        // Beregner tilgængeligt lager i en given periode
+        // Ekskluderer en specifik ordre hvis angivet (bruges ved Edit)
+        private Dictionary<int, int> GetAvailability(DateTime start, DateTime end, int? excludeOrderId = null)
+        {
+            // Opretter dictionary med lagerbeholdning
+            var availability =
+                _context.Products.ToDictionary(p => p.Id, p => p.Inventory);
+
+            // Finder ordrer i samme periode
+            var ordersInPeriod = _context.Orders
+                .Include(o => o.OrderItems)
+                .Where(o =>
+                    o.Id != excludeOrderId &&
+                    o.SetupDate <= end &&
+                    o.PickupDate >= start)
+                .ToList();
+
+            // Trækker allerede bookede produkter fra lager
+            foreach (var o in ordersInPeriod)
+                foreach (var oi in o.OrderItems)
+                    availability[oi.ProductId] -= oi.Quantity;
+
+            return availability;
+        }
+
         // Henter og viser alle ordrer
         // Inkluderer OrderItems og Products
         public IActionResult Index()
@@ -42,7 +67,7 @@ namespace AdminPanel.Controllers
         // Opretter ny ordre
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Order order, int[] productId, int[] quantity)
+        public IActionResult Create(Order order, Product[] products, int[] quantity)
         {
             // Tjekker om setup dato mangler
             if (order.SetupDate == null)
@@ -50,7 +75,7 @@ namespace AdminPanel.Controllers
 
             // Tjekker om pickup dato mangler
             if (order.PickupDate == null)
-                ModelState.AddModelError("Afhetningsdato", "Slutdato kræves");
+                ModelState.AddModelError("Afhentningsdato", "Slutdato kræves");
 
             // Hvis model ikke er valid
             if (!ModelState.IsValid)
@@ -59,46 +84,34 @@ namespace AdminPanel.Controllers
                 return View(order);
             }
 
-            // Opretter dictionary med lagerbeholdning
-            var Availability =
-                _context.Products.ToDictionary(p => p.Id, p => p.Inventory);
-
-            // Finder alle ordrer i samme periode
-            var ordersInPeriod = _context.Orders
-                .Include(o => o.OrderItems)
-                .Where(o =>
-                    o.SetupDate <= order.PickupDate &&
-                    o.PickupDate >= order.SetupDate)
-                .ToList();
-
-            // Trækker allerede bookede produkter fra lager
-            foreach (var o in ordersInPeriod)
-                foreach (var oi in o.OrderItems)
-                    Availability[oi.ProductId] -= oi.Quantity;
+            // Henter tilgængeligt lager i perioden
+            var availability = GetAvailability(
+                order.SetupDate!.Value,
+                order.PickupDate!.Value);
 
             // Fejl flag
-            bool fejl = false;
+            bool hasError = false;
 
             // Tjekker om ønsket antal overstiger lager
-            for (int i = 0; i < productId.Length; i++)
+            for (int i = 0; i < products.Length; i++)
             {
                 var ant =
                     (i < quantity.Length && quantity[i] > 0)
                     ? quantity[i]
                     : 0;
 
-                if (ant > Availability[productId[i]])
+                if (ant > availability[products[i].Id])
                 {
                     ModelState.AddModelError(
                         "",
-                        $"Ikke nok af produktet: {ant} ønsket, maks {Availability[productId[i]]}");
+                        $"Ikke nok af produktet: {products[i].Name}, maks {availability[products[i].Id]}");
 
-                    fejl = true;
+                    hasError = true;
                 }
             }
 
             // Returnerer view igen hvis fejl
-            if (fejl)
+            if (hasError)
             {
                 ViewBag.Produkter = _context.Products.ToList();
                 return View(order);
@@ -112,7 +125,7 @@ namespace AdminPanel.Controllers
             order.OrderItems = new List<OrderItem>();
 
             // Tilføjer OrderItems til ordren
-            for (int i = 0; i < productId.Length; i++)
+            for (int i = 0; i < products.Length; i++)
             {
                 var ant =
                     (i < quantity.Length && quantity[i] > 0)
@@ -124,13 +137,13 @@ namespace AdminPanel.Controllers
                 {
                     order.OrderItems.Add(new OrderItem
                     {
-                        ProductId = productId[i],
+                        ProductId = products[i].Id,
 
                         // Fastlåser antal
                         Quantity = ant,
 
                         // Fastlåser pris
-                        Price = prices[productId[i]]
+                        Price = prices[products[i].Id]
                     });
                 }
             }
@@ -201,27 +214,15 @@ namespace AdminPanel.Controllers
             dbOrder.Transport =
                 order.Transport ?? dbOrder.Transport;
 
-            // Opretter dictionary med lagerbeholdning
-            var Availability =
-                _context.Products.ToDictionary(p => p.Id, p => p.Inventory);
-
-            // Finder ordrer i samme periode
-            // Ekskluderer denne ordre
-            var ordersIPeriode = _context.Orders
-                .Include(o => o.OrderItems)
-                .Where(o =>
-                    o.Id != id &&
-                    o.SetupDate <= dbOrder.PickupDate &&
-                    o.PickupDate >= dbOrder.SetupDate)
-                .ToList();
-
-            // Trækker bookede produkter fra lager
-            foreach (var o in ordersIPeriode)
-                foreach (var oi in o.OrderItems)
-                    Availability[oi.ProductId] -= oi.Quantity;
+            // Henter tilgængeligt lager i perioden
+            // Ekskluderer denne ordre så dens egne produkter ikke tælles med
+            var availability = GetAvailability(
+                dbOrder.SetupDate!.Value,
+                dbOrder.PickupDate!.Value,
+                excludeOrderId: id);
 
             // Fejl flag
-            bool fejl = false;
+            bool hasError = false;
 
             // Tjekker lagerbeholdning
             for (int i = 0; i < productId.Length; i++)
@@ -231,18 +232,18 @@ namespace AdminPanel.Controllers
                     ? quantity[i]
                     : 0;
 
-                if (ant > Availability[productId[i]])
+                if (ant > availability[productId[i]])
                 {
                     ModelState.AddModelError(
                         "",
-                        $"Ikke nok af produktet: {ant} ønsket, maks {Availability[productId[i]]}");
+                        $"Ikke nok af produktet: {ant} ønsket, maks {availability[productId[i]]}");
 
-                    fejl = true;
+                    hasError = true;
                 }
             }
 
             // Returnerer view igen hvis fejl
-            if (fejl)
+            if (hasError)
             {
                 ViewBag.Produkter = _context.Products.ToList();
                 return View(dbOrder);
@@ -349,25 +350,11 @@ namespace AdminPanel.Controllers
         [HttpGet]
         public IActionResult Availability(DateTime start, DateTime end)
         {
-            // Opretter dictionary med lagerbeholdning
-            var Availability =
-                _context.Products.ToDictionary(p => p.Id, p => p.Inventory);
-
-            // Finder ordrer i perioden
-            var ordersIPeriode = _context.Orders
-                .Include(o => o.OrderItems)
-                .Where(o =>
-                    o.SetupDate <= end &&
-                    o.PickupDate >= start)
-                .ToList();
-
-            // Trækker bookede produkter fra lager
-            foreach (var o in ordersIPeriode)
-                foreach (var oi in o.OrderItems)
-                    Availability[oi.ProductId] -= oi.Quantity;
+            // Henter tilgængeligt lager i perioden
+            var availability = GetAvailability(start, end);
 
             // Returnerer data som JSON
-            return Json(Availability);
+            return Json(availability);
         }
     }
 }

@@ -1,70 +1,43 @@
 ﻿@model AdminPanel.Models.Order
-
 <!-- Overskrift -->
 <h2>Ordredetaljer</h2>
-
 <!-- Ordre information -->
 <div>
-
     <!-- Kunde -->
     <b>Kunde:</b>
     @Model.Customer
-
     <br />
-
     <!-- Adresse -->
     <b>Adresse:</b>
     @Model.Address
-
     <br />
-
     <!-- Telefonnummer -->
     <b>Telefon:</b>
     @Model.Number
-
     <br />
-
     <!-- Opsætningsdato -->
     <b>Opsætning:</b>
     @Model.SetupDate?.ToShortDateString()
-
     <br />
-
     <!-- Afhentningsdato -->
     <b>Afhentning:</b>
-
     @(Model.PickupDate?.ToShortDateString() ?? "")
-
     <br />
-
     <!-- Transport -->
     <b>Transport:</b>
     @Model.Transport
-
     <br />
-
     <!-- Samlet pris -->
     <b>Pris:</b>
-
-    @Model.OrderItems
-        .Sum(oi =>
-            (oi.Product?.Price ?? 0)
-            * oi.Quantity)
-        .ToString("C")
-
+    @Model.Price.ToString("C")
     <br />
-
     <!-- Noter -->
     <b>Noter:</b>
     @Model.Notes
-
 </div>
-
 <!-- Produktliste -->
 <h4>Produkter</h4>
-
 <table class="table table-bordered">
-
     <!-- Tabel overskrifter -->
     <thead>
         <tr>
@@ -74,47 +47,34 @@
             <th>Total</th>
         </tr>
     </thead>
-
     <!-- Tabel data -->
     <tbody>
-
         <!-- Gennemgår alle produkter -->
         @foreach (var item in Model.OrderItems)
         {
             <tr>
-
                 <!-- Produkt navn -->
                 <td>
                     @item.Product.Name
                 </td>
-
-                <!-- Pris -->
+                <!-- Fastlåst pris -->
                 <td>
-                    @(item.Product?.Price ?? 0)
-                    .ToString("C")
+                    @item.Price.ToString("C")
                 </td>
-
                 <!-- Antal -->
                 <td>
                     @item.Quantity
                 </td>
-
                 <!-- Samlet pris -->
                 <td>
-                    @((item.Product?.Price ?? 0)
-                        * item.Quantity)
-                    .ToString("C")
+                    @item.TotalPrice.ToString("C")
                 </td>
-
             </tr>
         }
-
     </tbody>
 </table>
-
 <!-- Tilbage knap -->
 <a asp-action="Index"
    class="btn btn-secondary">
-
     Tilbage til Ordrer
 </a>
