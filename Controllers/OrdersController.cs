@@ -31,7 +31,7 @@ namespace AdminPanel.Controllers
             var ordersInPeriod = _context.Orders
                 .Include(o => o.OrderItems)
                 .Where(o =>
-                    o.Id != excludeOrderId &&
+                    (!excludeOrderId.HasValue || o.Id != excludeOrderId.Value) &&
                     o.SetupDate <= end &&
                     o.PickupDate >= start)
                 .ToList();
@@ -164,10 +164,9 @@ namespace AdminPanel.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // Henter ordre til redigering
         public IActionResult Edit(int id)
         {
-            // Finder ordre inkl produkter
+            // Finder ordre inkl. OrderItems og Product relation
             var order = _context.Orders
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
@@ -177,7 +176,7 @@ namespace AdminPanel.Controllers
             if (order == null)
                 return NotFound();
 
-            // Sender produktliste til view
+            // Sender produktliste til view (bruges til tabel)
             ViewBag.Produkter = _context.Products.ToList();
 
             // Sender ordre til view
@@ -187,7 +186,7 @@ namespace AdminPanel.Controllers
         // Opdaterer eksisterende ordre
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit( int id, Order order, Product[] products, int[] quantity)
+        public IActionResult Edit(int id, Order order, Product[] products, int[] quantity)
         {
             // Finder eksisterende ordre i database
             var dbOrder = _context.Orders
@@ -245,10 +244,7 @@ namespace AdminPanel.Controllers
                 return View(dbOrder);
             }
 
-            // Henter produktpriser
-            var prices = _context.Products.ToDictionary(p => p.Id, p => p.Price);
-
-            // Gemmer gamle OrderItems
+            // Gemmer gamle OrderItems så gammel pris kan bevares
             var existingItems = dbOrder.OrderItems.ToDictionary(oi => oi.ProductId);
 
             // Fjerner gamle items
@@ -264,19 +260,10 @@ namespace AdminPanel.Controllers
 
                 if (ant > 0)
                 {
-                    decimal price;
-
-                    // Hvis produkt fandtes før
-                    if (existingItems.ContainsKey(products[i].Id))
-                    {
-                        // Behold gammel pris
-                        price = existingItems[products[i].Id].Price;
-                    }
-                    else
-                    {
-                        // Nyt produkt får ny pris
-                        price = prices[products[i].Id];
-                    }
+                    // Behold gammel pris hvis produktet fandtes før, ellers brug aktuel pris
+                    decimal price = existingItems.ContainsKey(products[i].Id)
+                        ? existingItems[products[i].Id].Price
+                        : products[i].Price;
 
                     // Tilføjer item til ordren
                     dbOrder.OrderItems.Add(new OrderItem
@@ -292,7 +279,7 @@ namespace AdminPanel.Controllers
             dbOrder.Notes = string.Join(
                 ", ",
                 dbOrder.OrderItems.Select(oi =>
-                    $"{oi.Quantity} x {oi.Product?.Name ?? _context.Products.First(p => p.Id == oi.ProductId).Name}"));
+                    $"{oi.Quantity} x {products.First(p => p.Id == oi.ProductId).Name}"));
 
             // Gemmer ændringer
             _context.SaveChanges();
@@ -340,17 +327,6 @@ namespace AdminPanel.Controllers
 
             // Sender bruger tilbage til Index
             return RedirectToAction(nameof(Index));
-        }
-
-        // Returnerer lager-tilgængelighed via AJAX
-        [HttpGet]
-        public IActionResult Availability(DateTime start, DateTime end)
-        {
-            // Henter tilgængeligt lager i perioden
-            var availability = GetAvailability(start, end);
-
-            // Returnerer data som JSON
-            return Json(availability);
         }
     }
 }

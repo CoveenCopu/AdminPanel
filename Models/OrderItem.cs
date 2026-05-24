@@ -16,7 +16,7 @@ namespace AdminPanel.Models
         // Fremmednøgle til Product
         [Display(Name = "Produkt")]
         public int ProductId { get; set; }
-
+        
         // Reference til Product objekt
         public Product Product { get; set; }
 

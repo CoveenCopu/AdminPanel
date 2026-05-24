@@ -93,7 +93,7 @@ namespace AdminPanel.Controllers
         // Opdaterer eksisterende produkt
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Product product)
+        public async Task<IActionResult> EditConfirmed(int id, Product product)
         {
             // Tjekker om route-id matcher produkt-id
             if (id != product.Id)

@@ -124,14 +124,14 @@
 
                     <!-- Antal input -->
                     <td>
-                        <!-- Skjult productId -->
-                        <input type="hidden"
-                               name="productId"
-                               value="@pid" />
+                        <!-- Skjulte product felter -->
+                        <input type="hidden" name="products[@i].Id" value="@pid" />
+                        <input type="hidden" name="products[@i].Name" value="@products[i].Name" />
+                        <input type="hidden" name="products[@i].Price" value="@products[i].Price" />
 
                         <!-- Antal -->
                         <input type="number"
-                               name="quantity"
+                               name="quantity[@i]"
                                min="0"
                                value="@quantity"
                                class="form-control antal-input"
