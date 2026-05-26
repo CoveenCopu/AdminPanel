@@ -20,7 +20,6 @@ namespace AdminPanel.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // Hvis du vil, kan du konfigurere relationer her
         }
     }
 }

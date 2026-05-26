@@ -5,7 +5,7 @@
     ViewData["Title"] = "Tilføj ordre";
 
     // Henter produkter fra ViewBag
-    var produkter =
+    var products =
         ViewBag.Produkter as List<AdminPanel.Models.Product>
         ?? new List<AdminPanel.Models.Product>();
 }
@@ -89,20 +89,20 @@
         <!-- Tabel data -->
         <tbody>
             <!-- Gennemgår alle produkter -->
-            @for (int i = 0; i < produkter.Count; i++)
+            @for (int i = 0; i < products.Count; i++)
             {
-                int pid = produkter[i].Id;
+                int pid = products[i].Id;
                 <tr>
                     <!-- Produkt navn -->
-                    <td>@produkter[i].Name</td>
+                    <td>@products[i].Name</td>
                     <!-- Produkt pris -->
-                    <td>@produkter[i].Price.ToString("C")</td>
+                    <td>@products[i].Price.ToString("C")</td>
                     <!-- Antal input -->
                     <td>
                         <!-- Skjulte product felter -->
                         <input type="hidden" name="products[@i].Id" value="@pid" />
-                        <input type="hidden" name="products[@i].Name" value="@produkter[i].Name" />
-                        <input type="hidden" name="products[@i].Price" value="@produkter[i].Price" />
+                        <input type="hidden" name="products[@i].Name" value="@products[i].Name" />
+                        <input type="hidden" name="products[@i].Price" value="@products[i].Price" />
 
                         <!-- Antal input -->
                         <input type="number"
@@ -111,7 +111,7 @@
                                value="0"
                                class="form-control antal-input"
                                data-prodid="@pid"
-                               data-produktnavn="@produkter[i].Name" />
+                               data-produktnavn="@products[i].Name" />
                     </td>
                 </tr>
             }

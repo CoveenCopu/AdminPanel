@@ -10,7 +10,7 @@
         ?? new List<AdminPanel.Models.Product>();
 
     // Opretter dictionary med eksisterende produkter og antal
-    var eksisterende =
+    var existing =
         Model.OrderItems.ToDictionary(
             oi => oi.ProductId,
             oi => oi.Quantity
@@ -111,8 +111,8 @@
 
                 // Finder eksisterende antal
                 int quantity =
-                eksisterende.ContainsKey(pid)
-                ? eksisterende[pid]
+                existing.ContainsKey(pid)
+                ? existing[pid]
                 : 0;
 
                 <tr>

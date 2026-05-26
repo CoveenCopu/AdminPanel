@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 //
-// Database
+// Database - Opsætning af connection string
 //
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
